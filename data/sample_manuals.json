@@ -1,0 +1,1002 @@
+[
+  {
+    "manual_id": 50001,
+    "title": "RESPONSE_LATENCY_ALERTアラーム対応手順",
+    "category": "監視アラーム",
+    "system_type": "PHOENIX",
+    "keywords": "RESPONSE_LATENCY_ALERT,遅延,監視,count,time",
+    "service_check": "1. 確認手順\n   - 対象アラームの詳細情報を確認する\n   - 【確認ポイント】\n     - count値が増加傾向にあるか確認\n     - time値で発生時刻を特定\n\n2. ネットワーク確認\n   - 監視サーバーから対象ホストへのping確認\n   - トレースルートでの経路確認\n   ```\n   ping [対象ホスト]\n   traceroute [対象ホスト]\n   ```",
+    "recovery_procedure": "1. 一時的な遅延の場合\n   - 5分程度経過観察し、count値が減少するか確認\n   \n2. 継続的な遅延の場合\n   - ネットワークチームへエスカレーション\n   - 監視システムの再起動を検討",
+    "full_content": "# RESPONSE_LATENCY_ALERTアラーム対応手順\n\n## 概要\nRESPONSE_LATENCY_ALERTは、監視システムからのデータ受信が遅延した場合に発生するアラームです。\n\n## 重要項目\n- アラーム発生時は、まず監視対象システムの状態を確認してください\n- count値が継続的に増加する場合は、ネットワーク経路の確認が必要です"
+  },
+  {
+    "manual_id": 50002,
+    "title": "RESPONSE_LATENCY_ALERT継続発生時の対応",
+    "category": "監視アラーム",
+    "system_type": "PHOENIX",
+    "keywords": "RESPONSE_LATENCY_ALERT,継続,ログ,プロセス,再起動",
+    "service_check": "1. ログ確認\n   - 監視サーバーのログを確認\n   ```\n   tail -f /var/log/monitoring/delay_check.log\n   ```\n\n2. プロセス確認\n   - 監視プロセスの状態を確認\n   ```\n   ps aux | grep monitor\n   systemctl status monitoring-service\n   ```",
+    "recovery_procedure": "1. 監視サービス再起動\n   ```\n   systemctl restart monitoring-service\n   ```\n\n2. 設定ファイルの確認\n   - /etc/monitoring/config.yml の timeout 設定を確認\n   - 必要に応じて値を調整",
+    "full_content": "# RESPONSE_LATENCY_ALERT継続発生時の対応\n\n## 概要\nRESPONSE_LATENCY_ALERTが継続的に発生する場合の詳細調査手順です。"
+  },
+  {
+    "manual_id": 50003,
+    "title": "Probe HEALTH_CHECK MESSAGE対応マニュアル",
+    "category": "監視プローブ",
+    "system_type": "GATEWAY",
+    "keywords": "Probe,HEALTH_CHECK,TEST_ID,SYSTEM,PORT,Unknown,Type Not Set",
+    "service_check": "1. アラーム情報の確認\n   - TEST_ID: テスト実行時刻\n   - SYSTEM: 対象システム名\n   - PORT: 監視ポート番号\n\n2. プローブ状態確認\n   ```\n   /opt/ops/bin/probe-status.sh\n   ```",
+    "recovery_procedure": "1. 定期テストの場合\n   - 自動クローズを待つ（通常5分以内）\n\n2. 異常な場合\n   - プローブ設定の確認\n   - 必要に応じてプローブ再起動\n   ```\n   /opt/ops/bin/restart-probe.sh\n   ```",
+    "full_content": "# Probe HEALTH_CHECK MESSAGE対応マニュアル\n\n## 概要\nOPS ProbeからのHEALTH_CHECKメッセージアラームの対応手順です。\n\n## 重要項目\n- TEST_ID、SYSTEM、PORTの情報を必ず確認してください\n- Unknown/Type Not Setは正常な動作です"
+  },
+  {
+    "manual_id": 50004,
+    "title": "統合キャッシュDNSβ LB DoS攻撃検知",
+    "category": "セキュリティ",
+    "system_type": "CDNS",
+    "keywords": "DoS,攻撃,Attack ID,セキュリティ,DNS,Sweep attack",
+    "service_check": "1. サービス確認\n   - [DNSキャッシュαβ] サービス確認手順\n   - シートを参照する",
+    "recovery_procedure": "0. 手動でのキャプチャファイル確認\n   ※本マニュアルで検知されているアラームとは別で取得しているキャプチャサーバー上で、\n   大量クエリなどを検知していないか確認してください。\n\n   TeraTermで以下へ接続\n   ★★★CLI自動化ツール（バニラ）★★★\n   【起動マクロ】\n\n1. Attack IDの確認\n   - アラームメッセージからAttack IDを特定\n   - セキュリティログで詳細を確認\n\n2. 対応判断\n   - 自動ブロックが有効化されているか確認\n   - 手動対応が必要な場合はセキュリティチームへ連絡\n\n3. エスカレーション\n   - セキュリティオペレーションセンターへ連絡\n   - インシデントチケットの起票",
+    "full_content": "# 統合キャッシュDNSβ LB DoS攻撃検知\n\n## 概要\nDoS攻撃が検知された場合の対応手順です。\n\n## 重要項目\n- Attack IDを必ず記録してください\n- セキュリティチームへの連絡が必須です"
+  },
+  {
+    "manual_id": 2001,
+    "title": "CPU使用率閾値超過アラーム対応",
+    "category": "リソース監視",
+    "system_type": "共通",
+    "keywords": "CPU,使用率,閾値,80%,高負荷,プロセス",
+    "service_check": "1. 現在のCPU状態確認\n   ```\n   top -bn1 | head -20\n   sar -u 1 5\n   ```\n\n2. 高負荷プロセスの特定\n   ```\n   ps aux --sort=-%cpu | head -10\n   ```",
+    "recovery_procedure": "1. 一時的な高負荷の場合\n   - 経過観察（10分程度）\n   \n2. 継続的な高負荷の場合\n   - 不要なプロセスの停止を検討\n   - アプリケーションチームへエスカレーション",
+    "full_content": "# CPU使用率閾値超過アラーム対応\n\n## 概要\nCPU使用率が閾値(80%)を超過した場合の対応手順です。\n\n## 重要項目\n- 高負荷の原因プロセスを特定してください\n- 一時的なスパイクか継続的な高負荷かを判断してください"
+  },
+  {
+    "manual_id": 2002,
+    "title": "CPU使用率継続的高負荷時の詳細調査",
+    "category": "リソース監視",
+    "system_type": "共通",
+    "keywords": "CPU,継続,高負荷,strace,perf,vmstat",
+    "service_check": "1. プロセス詳細調査\n   ```\n   strace -p [PID] -c\n   perf top\n   ```\n\n2. システムリソース全体の確認\n   ```\n   vmstat 1 10\n   iostat -x 1 5\n   ```",
+    "recovery_procedure": "1. アプリケーション起因の場合\n   - アプリケーションの再起動を検討\n   - 設定チューニングの検討\n\n2. システム起因の場合\n   - カーネルパラメータの確認\n   - ハードウェア障害の可能性を調査",
+    "full_content": "# CPU使用率継続的高負荷時の詳細調査\n\n## 概要\nCPU使用率が継続的に高い場合の詳細調査手順です。"
+  },
+  {
+    "manual_id": 2003,
+    "title": "メモリ使用率閾値超過アラーム対応",
+    "category": "リソース監視",
+    "system_type": "共通",
+    "keywords": "メモリ,使用率,閾値,85%,スワップ,リーク",
+    "service_check": "1. メモリ状態確認\n   ```\n   free -h\n   cat /proc/meminfo\n   ```\n\n2. プロセス別メモリ使用量\n   ```\n   ps aux --sort=-%mem | head -10\n   ```",
+    "recovery_procedure": "1. キャッシュクリア\n   ```\n   sync; echo 3 > /proc/sys/vm/drop_caches\n   ```\n\n2. 大量メモリ消費プロセスの対応\n   - プロセス再起動の検討\n   - メモリリーク調査の実施",
+    "full_content": "# メモリ使用率閾値超過アラーム対応\n\n## 概要\nメモリ使用率が閾値(85%)を超過した場合の対応手順です。\n\n## 重要項目\n- メモリリークの可能性を確認してください\n- スワップ使用状況も合わせて確認してください"
+  },
+  {
+    "manual_id": 2004,
+    "title": "メモリリーク調査手順",
+    "category": "リソース監視",
+    "system_type": "共通",
+    "keywords": "メモリリーク,pmap,smaps,プロファイリング",
+    "service_check": "1. メモリ使用量推移の確認\n   ```\n   while true; do ps aux --sort=-%mem | head -5; sleep 60; done\n   ```\n\n2. プロセス詳細調査\n   ```\n   pmap -x [PID]\n   cat /proc/[PID]/smaps\n   ```",
+    "recovery_procedure": "1. 短期対策\n   - プロセスの定期再起動設定\n   \n2. 長期対策\n   - アプリケーション開発チームへの調査依頼\n   - メモリプロファイリングの実施",
+    "full_content": "# メモリリーク調査手順\n\n## 概要\nメモリリークが疑われる場合の詳細調査手順です。"
+  },
+  {
+    "manual_id": 2005,
+    "title": "ディスク使用率アラーム対応",
+    "category": "リソース監視",
+    "system_type": "共通",
+    "keywords": "ディスク,使用率,df,du,logrotate",
+    "service_check": "1. ディスク使用状況確認\n   ```\n   df -h\n   du -sh /* | sort -rh | head -10\n   ```\n\n2. 大きなファイルの特定\n   ```\n   find / -type f -size +100M -exec ls -lh {} \\;\n   ```",
+    "recovery_procedure": "1. ログファイルのローテーション\n   ```\n   logrotate -f /etc/logrotate.conf\n   ```\n\n2. 不要ファイルの削除\n   - 古いログファイルの削除\n   - テンポラリファイルの削除",
+    "full_content": "# ディスク使用率アラーム対応\n\n## 概要\nディスク使用率が閾値を超過した場合の対応手順です。"
+  },
+  {
+    "manual_id": 3001,
+    "title": "インターフェースリンクダウン対応",
+    "category": "ネットワーク",
+    "system_type": "NW",
+    "keywords": "リンクダウン,linkDown,インターフェース,ケーブル,ポート",
+    "service_check": "1. インターフェース状態確認\n   ```\n   ip link show\n   ethtool [interface]\n   ```\n\n2. 対向機器の確認\n   - 対向スイッチのポート状態確認\n   - ケーブル接続状態の確認",
+    "recovery_procedure": "1. 物理的な確認\n   - ケーブルの抜き差し\n   - 別ポートへの接続試行\n\n2. 論理的な確認\n   - インターフェースの再起動\n   ```\n   ip link set [interface] down\n   ip link set [interface] up\n   ```",
+    "full_content": "# インターフェースリンクダウン対応\n\n## 概要\nネットワークインターフェースのリンクダウンが検知された場合の対応手順です。\n\n## 重要項目\n- 影響範囲を速やかに特定してください\n- 冗長経路の確認を優先してください"
+  },
+  {
+    "manual_id": 3002,
+    "title": "ネットワーク冗長切り替え時の確認手順",
+    "category": "ネットワーク",
+    "system_type": "NW",
+    "keywords": "冗長,フェイルオーバー,VRRP,HSRP,Bonding,経路",
+    "service_check": "1. ルーティングテーブル確認\n   ```\n   ip route show\n   netstat -rn\n   ```\n\n2. 冗長プロトコル状態確認\n   - VRRP/HSRP状態の確認\n   - Bonding状態の確認\n   ```\n   cat /proc/net/bonding/bond0\n   ```",
+    "recovery_procedure": "1. 自動フェイルオーバーの確認\n   - 冗長経路への切り替え確認\n   - サービス影響の確認\n\n2. 手動切り替えが必要な場合\n   - ネットワークチームと連携して実施",
+    "full_content": "# ネットワーク冗長切り替え時の確認手順\n\n## 概要\nネットワーク障害時の冗長経路への切り替え確認手順です。"
+  },
+  {
+    "manual_id": 4001,
+    "title": "BGPセッション状態変更アラーム対応",
+    "category": "ネットワーク",
+    "system_type": "NW",
+    "keywords": "BGP,セッション,ピア,経路,Hold Timer,Peer Reset",
+    "service_check": "1. BGPセッション状態確認\n   ```\n   show ip bgp summary\n   show ip bgp neighbors [peer-ip]\n   ```\n\n2. 経路情報確認\n   ```\n   show ip bgp\n   show ip route bgp\n   ```",
+    "recovery_procedure": "1. セッション再確立の試行\n   ```\n   clear ip bgp [peer-ip] soft\n   ```\n\n2. 根本原因の調査\n   - Hold Timer Expiredの場合：ネットワーク遅延を確認\n   - Peer Resetの場合：対向機器の状態を確認",
+    "full_content": "# BGPセッション状態変更アラーム対応\n\n## 概要\nBGPセッションの状態変更が検知された場合の対応手順です。\n\n## 重要項目\n- ピアIPとセッション状態を確認してください\n- 経路情報への影響を確認してください"
+  },
+  {
+    "manual_id": 4002,
+    "title": "BGP経路広報異常時の対応",
+    "category": "ネットワーク",
+    "system_type": "NW",
+    "keywords": "BGP,経路,広報,AS-PATH,Prefix-list,フィルタ",
+    "service_check": "1. 広報経路の確認\n   ```\n   show ip bgp neighbors [peer-ip] advertised-routes\n   show ip bgp neighbors [peer-ip] received-routes\n   ```\n\n2. ルートマップの確認\n   - フィルタリング設定の確認\n   - AS-PATH、Prefix-listの確認",
+    "recovery_procedure": "1. 経路再広報\n   ```\n   clear ip bgp [peer-ip] out\n   ```\n\n2. 設定の見直し\n   - BGP設定の確認と修正\n   - ネットワークチームへのエスカレーション",
+    "full_content": "# BGP経路広報異常時の対応\n\n## 概要\nBGP経路の広報に異常が発生した場合の対応手順です。"
+  },
+  {
+    "manual_id": 5001,
+    "title": "サービスヘルスチェック失敗時の対応",
+    "category": "アプリケーション",
+    "system_type": "APP",
+    "keywords": "ヘルスチェック,serviceDown,タイムアウト,応答なし",
+    "service_check": "1. サービス状態確認\n   ```\n   systemctl status [service]\n   curl -v http://localhost:[port]/health\n   ```\n\n2. ログ確認\n   ```\n   journalctl -u [service] -n 100\n   tail -f /var/log/[service]/error.log\n   ```",
+    "recovery_procedure": "1. サービス再起動\n   ```\n   systemctl restart [service]\n   ```\n\n2. 根本原因の調査\n   - 設定ファイルの確認\n   - 依存サービスの状態確認",
+    "full_content": "# サービスヘルスチェック失敗時の対応\n\n## 概要\nサービスのヘルスチェックが失敗した場合の対応手順です。\n\n## 重要項目\n- サービス名とホスト名を確認してください\n- 影響を受けるユーザー/システムを特定してください"
+  },
+  {
+    "manual_id": 5002,
+    "title": "Webサービス応答遅延時の調査手順",
+    "category": "アプリケーション",
+    "system_type": "APP",
+    "keywords": "応答遅延,レスポンス,タイムアウト,ワーカー,スレッド",
+    "service_check": "1. 応答時間の計測\n   ```\n   curl -w \"@curl-format.txt\" -o /dev/null -s http://localhost:[port]/\n   ab -n 100 -c 10 http://localhost:[port]/\n   ```\n\n2. スレッド/プロセス状態確認\n   - ワーカープロセス数の確認\n   - 処理待ちリクエストの確認",
+    "recovery_procedure": "1. 短期対策\n   - ワーカー数の一時的な増加\n   - 不要なリクエストのブロック\n\n2. 長期対策\n   - パフォーマンスチューニング\n   - スケールアウトの検討",
+    "full_content": "# Webサービス応答遅延時の調査手順\n\n## 概要\nWebサービスの応答が遅延している場合の調査手順です。"
+  },
+  {
+    "manual_id": 5003,
+    "title": "アプリケーションクラッシュ時の対応",
+    "category": "アプリケーション",
+    "system_type": "APP",
+    "keywords": "クラッシュ,coredump,異常終了,segfault",
+    "service_check": "1. クラッシュ情報の収集\n   ```\n   coredumpctl list\n   coredumpctl info [PID]\n   ```\n\n2. ログの確認\n   ```\n   journalctl -xe\n   dmesg | tail -50\n   ```",
+    "recovery_procedure": "1. サービス復旧\n   ```\n   systemctl restart [service]\n   ```\n\n2. 原因調査\n   - コアダンプの解析\n   - 開発チームへのエスカレーション",
+    "full_content": "# アプリケーションクラッシュ時の対応\n\n## 概要\nアプリケーションがクラッシュした場合の対応手順です。"
+  },
+  {
+    "manual_id": 6001,
+    "title": "コネクションプール枯渇時の対応",
+    "category": "データベース",
+    "system_type": "DB",
+    "keywords": "コネクションプール,枯渇,ACTIVE,MAX,pg_stat_activity",
+    "service_check": "1. コネクション状態確認\n   ```sql\n   SELECT * FROM pg_stat_activity;\n   SHOW PROCESSLIST;  -- MySQL\n   ```\n\n2. 長時間コネクションの特定\n   ```sql\n   SELECT * FROM pg_stat_activity \n   WHERE state != 'idle' \n   AND query_start < now() - interval '5 minutes';\n   ```",
+    "recovery_procedure": "1. 不要コネクションの終了\n   ```sql\n   SELECT pg_terminate_backend([PID]);\n   KILL [process_id];  -- MySQL\n   ```\n\n2. プール設定の見直し\n   - 最大コネクション数の調整\n   - タイムアウト設定の確認",
+    "full_content": "# コネクションプール枯渇時の対応\n\n## 概要\nデータベースコネクションプールが枯渇した場合の対応手順です。\n\n## 重要項目\n- アクティブコネクション数を確認してください\n- 長時間占有されているコネクションを特定してください"
+  },
+  {
+    "manual_id": 7001,
+    "title": "SSL証明書期限切れ警告対応",
+    "category": "セキュリティ",
+    "system_type": "共通",
+    "keywords": "SSL,証明書,期限,有効期限,更新,openssl",
+    "service_check": "1. 証明書情報確認\n   ```\n   openssl s_client -connect [host]:443 -servername [domain] | openssl x509 -noout -dates\n   ```\n\n2. 証明書ファイルの確認\n   ```\n   openssl x509 -in /path/to/cert.pem -noout -dates\n   ```",
+    "recovery_procedure": "1. 証明書更新依頼\n   - 証明書管理チームへの更新依頼\n   - 更新スケジュールの確認\n\n2. 証明書の入れ替え\n   - 新証明書の配置\n   - Webサーバーの再起動\n   ```\n   systemctl restart nginx\n   ```",
+    "full_content": "# SSL証明書期限切れ警告対応\n\n## 概要\nSSL証明書の有効期限が近づいた場合の対応手順です。\n\n## 重要項目\n- 対象ドメインと残り日数を確認してください\n- 証明書更新の担当者を特定してください"
+  },
+  {
+    "manual_id": 8001,
+    "title": "データベースレプリケーション遅延対応",
+    "category": "データベース",
+    "system_type": "DB",
+    "keywords": "レプリケーション,遅延,LAG,プライマリ,レプリカ,同期",
+    "service_check": "1. レプリケーション状態確認\n   ```sql\n   -- PostgreSQL\n   SELECT * FROM pg_stat_replication;\n   \n   -- MySQL\n   SHOW SLAVE STATUS\\G\n   ```\n\n2. 遅延の原因調査\n   - ネットワーク遅延の確認\n   - 重いクエリの確認",
+    "recovery_procedure": "1. 一時的な対策\n   - 重いクエリの停止\n   - レプリカの一時切り離し\n\n2. 恒久的な対策\n   - レプリカのスペック増強\n   - レプリケーション設定の最適化",
+    "full_content": "# データベースレプリケーション遅延対応\n\n## 概要\nデータベースのレプリケーション遅延が検知された場合の対応手順です。\n\n## 重要項目\n- プライマリとレプリカの情報を確認してください\n- 遅延秒数と傾向を確認してください"
+  },
+  {
+    "manual_id": 8002,
+    "title": "レプリケーション同期エラー対応",
+    "category": "データベース",
+    "system_type": "DB",
+    "keywords": "レプリケーション,同期エラー,SLAVE,再構築",
+    "service_check": "1. エラー詳細の確認\n   ```sql\n   -- PostgreSQL\n   SELECT * FROM pg_stat_replication;\n   \n   -- MySQL\n   SHOW SLAVE STATUS\\G\n   ```\n\n2. エラーログの確認\n   ```\n   tail -100 /var/log/postgresql/postgresql-*.log\n   tail -100 /var/log/mysql/error.log\n   ```",
+    "recovery_procedure": "1. レプリケーション再開\n   ```sql\n   -- MySQL\n   START SLAVE;\n   SET GLOBAL SQL_SLAVE_SKIP_COUNTER = 1;  -- エラースキップ\n   ```\n\n2. レプリカ再構築\n   - 重大なエラーの場合はレプリカの再構築を検討",
+    "full_content": "# レプリケーション同期エラー対応\n\n## 概要\nレプリケーションの同期エラーが発生した場合の対応手順です。"
+  },
+  {
+    "manual_id": 20001,
+    "title": "監視遅延検知対応手順",
+    "category": "監視アラーム",
+    "system_type": "PHOENIX",
+    "keywords": "遅延検知,監視アラーム,PHOENIX,対応,手順",
+    "service_check": "1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡",
+    "full_content": "# 監視遅延検知対応手順\n\n## 概要\n遅延検知が発生した場合の対応手順です。\n\n## 対象システム\nPHOENIX\n\n## 確認手順\n1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```\n\n## 復旧手順\n1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20002,
+    "title": "プローブテスト失敗対応手順",
+    "category": "監視プローブ",
+    "system_type": "GATEWAY",
+    "keywords": "テスト失敗,監視プローブ,GATEWAY,対応,手順",
+    "service_check": "1. プローブ状態確認\n   ```\n   /opt/monitoring/bin/probe-status.sh\n   ps aux | grep probe\n   ```\n\n2. ログ確認\n   ```\n   tail -f /var/log/probe/probe.log\n   ```",
+    "recovery_procedure": "1. プローブ再起動\n   ```\n   /opt/monitoring/bin/restart-probe.sh\n   ```\n\n2. 設定確認\n   - /etc/probe/config.yml の確認",
+    "full_content": "# プローブテスト失敗対応手順\n\n## 概要\nテスト失敗が発生した場合の対応手順です。\n\n## 対象システム\nGATEWAY\n\n## 確認手順\n1. プローブ状態確認\n   ```\n   /opt/monitoring/bin/probe-status.sh\n   ps aux | grep probe\n   ```\n\n2. ログ確認\n   ```\n   tail -f /var/log/probe/probe.log\n   ```\n\n## 復旧手順\n1. プローブ再起動\n   ```\n   /opt/monitoring/bin/restart-probe.sh\n   ```\n\n2. 設定確認\n   - /etc/probe/config.yml の確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20003,
+    "title": "LB認証失敗対応手順",
+    "category": "セキュリティ",
+    "system_type": "LB-CORE",
+    "keywords": "認証失敗,セキュリティ,LB-CORE,対応,手順",
+    "service_check": "1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```",
+    "recovery_procedure": "1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査",
+    "full_content": "# LB認証失敗対応手順\n\n## 概要\n認証失敗が発生した場合の対応手順です。\n\n## 対象システム\nLB-CORE\n\n## 確認手順\n1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```\n\n## 復旧手順\n1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20004,
+    "title": "LB権限エラー対応手順",
+    "category": "セキュリティ",
+    "system_type": "LB-CORE",
+    "keywords": "権限エラー,セキュリティ,LB-CORE,対応,手順",
+    "service_check": "1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```",
+    "recovery_procedure": "1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査",
+    "full_content": "# LB権限エラー対応手順\n\n## 概要\n権限エラーが発生した場合の対応手順です。\n\n## 対象システム\nLB-CORE\n\n## 確認手順\n1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```\n\n## 復旧手順\n1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20005,
+    "title": "DBテーブルロック対応手順",
+    "category": "データベース",
+    "system_type": "DB",
+    "keywords": "テーブルロック,データベース,DB,対応,手順",
+    "service_check": "1. DB状態確認\n   ```sql\n   SELECT * FROM pg_stat_activity;\n   SHOW PROCESSLIST;\n   ```\n\n2. ログ確認\n   ```\n   tail -100 /var/log/postgresql/postgresql.log\n   tail -100 /var/log/mysql/error.log\n   ```",
+    "recovery_procedure": "1. 接続リセット\n   - 長時間クエリの終了\n   - コネクションプールリセット\n\n2. 性能改善\n   - スロークエリの特定と最適化\n   - インデックス追加の検討",
+    "full_content": "# DBテーブルロック対応手順\n\n## 概要\nテーブルロックが発生した場合の対応手順です。\n\n## 対象システム\nDB\n\n## 確認手順\n1. DB状態確認\n   ```sql\n   SELECT * FROM pg_stat_activity;\n   SHOW PROCESSLIST;\n   ```\n\n2. ログ確認\n   ```\n   tail -100 /var/log/postgresql/postgresql.log\n   tail -100 /var/log/mysql/error.log\n   ```\n\n## 復旧手順\n1. 接続リセット\n   - 長時間クエリの終了\n   - コネクションプールリセット\n\n2. 性能改善\n   - スロークエリの特定と最適化\n   - インデックス追加の検討\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20006,
+    "title": "DBレプリケーション遅延対応手順",
+    "category": "データベース",
+    "system_type": "DB",
+    "keywords": "レプリケーション遅延,データベース,DB,対応,手順",
+    "service_check": "1. DB状態確認\n   ```sql\n   SELECT * FROM pg_stat_activity;\n   SHOW PROCESSLIST;\n   ```\n\n2. ログ確認\n   ```\n   tail -100 /var/log/postgresql/postgresql.log\n   tail -100 /var/log/mysql/error.log\n   ```",
+    "recovery_procedure": "1. 接続リセット\n   - 長時間クエリの終了\n   - コネクションプールリセット\n\n2. 性能改善\n   - スロークエリの特定と最適化\n   - インデックス追加の検討",
+    "full_content": "# DBレプリケーション遅延対応手順\n\n## 概要\nレプリケーション遅延が発生した場合の対応手順です。\n\n## 対象システム\nDB\n\n## 確認手順\n1. DB状態確認\n   ```sql\n   SELECT * FROM pg_stat_activity;\n   SHOW PROCESSLIST;\n   ```\n\n2. ログ確認\n   ```\n   tail -100 /var/log/postgresql/postgresql.log\n   tail -100 /var/log/mysql/error.log\n   ```\n\n## 復旧手順\n1. 接続リセット\n   - 長時間クエリの終了\n   - コネクションプールリセット\n\n2. 性能改善\n   - スロークエリの特定と最適化\n   - インデックス追加の検討\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20007,
+    "title": "DNSポートスキャン対応手順",
+    "category": "セキュリティ",
+    "system_type": "CDNS",
+    "keywords": "ポートスキャン,セキュリティ,CDNS,対応,手順",
+    "service_check": "1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```",
+    "recovery_procedure": "1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査",
+    "full_content": "# DNSポートスキャン対応手順\n\n## 概要\nポートスキャンが発生した場合の対応手順です。\n\n## 対象システム\nCDNS\n\n## 確認手順\n1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```\n\n## 復旧手順\n1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20008,
+    "title": "NWVLAN異常対応手順",
+    "category": "ネットワーク",
+    "system_type": "NW",
+    "keywords": "VLAN異常,ネットワーク,NW,対応,手順",
+    "service_check": "1. インターフェース確認\n   ```\n   ip link show\n   ip addr show\n   ip route show\n   ```\n\n2. 接続確認\n   ```\n   ping [対向機器IP]\n   traceroute [対向機器IP]\n   ```",
+    "recovery_procedure": "1. 物理確認\n   - ケーブル接続確認\n   - 対向機器の状態確認\n\n2. 論理確認\n   - インターフェース再起動\n   - ルーティング設定確認",
+    "full_content": "# NWVLAN異常対応手順\n\n## 概要\nVLAN異常が発生した場合の対応手順です。\n\n## 対象システム\nNW\n\n## 確認手順\n1. インターフェース確認\n   ```\n   ip link show\n   ip addr show\n   ip route show\n   ```\n\n2. 接続確認\n   ```\n   ping [対向機器IP]\n   traceroute [対向機器IP]\n   ```\n\n## 復旧手順\n1. 物理確認\n   - ケーブル接続確認\n   - 対向機器の状態確認\n\n2. 論理確認\n   - インターフェース再起動\n   - ルーティング設定確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20009,
+    "title": "プローブサービス監視対応手順",
+    "category": "監視プローブ",
+    "system_type": "GATEWAY",
+    "keywords": "サービス監視,監視プローブ,GATEWAY,対応,手順",
+    "service_check": "1. プローブ状態確認\n   ```\n   /opt/monitoring/bin/probe-status.sh\n   ps aux | grep probe\n   ```\n\n2. ログ確認\n   ```\n   tail -f /var/log/probe/probe.log\n   ```",
+    "recovery_procedure": "1. プローブ再起動\n   ```\n   /opt/monitoring/bin/restart-probe.sh\n   ```\n\n2. 設定確認\n   - /etc/probe/config.yml の確認",
+    "full_content": "# プローブサービス監視対応手順\n\n## 概要\nサービス監視が発生した場合の対応手順です。\n\n## 対象システム\nGATEWAY\n\n## 確認手順\n1. プローブ状態確認\n   ```\n   /opt/monitoring/bin/probe-status.sh\n   ps aux | grep probe\n   ```\n\n2. ログ確認\n   ```\n   tail -f /var/log/probe/probe.log\n   ```\n\n## 復旧手順\n1. プローブ再起動\n   ```\n   /opt/monitoring/bin/restart-probe.sh\n   ```\n\n2. 設定確認\n   - /etc/probe/config.yml の確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20010,
+    "title": "NW遅延増大対応手順",
+    "category": "ネットワーク",
+    "system_type": "NW",
+    "keywords": "遅延増大,ネットワーク,NW,対応,手順",
+    "service_check": "1. インターフェース確認\n   ```\n   ip link show\n   ip addr show\n   ip route show\n   ```\n\n2. 接続確認\n   ```\n   ping [対向機器IP]\n   traceroute [対向機器IP]\n   ```",
+    "recovery_procedure": "1. 物理確認\n   - ケーブル接続確認\n   - 対向機器の状態確認\n\n2. 論理確認\n   - インターフェース再起動\n   - ルーティング設定確認",
+    "full_content": "# NW遅延増大対応手順\n\n## 概要\n遅延増大が発生した場合の対応手順です。\n\n## 対象システム\nNW\n\n## 確認手順\n1. インターフェース確認\n   ```\n   ip link show\n   ip addr show\n   ip route show\n   ```\n\n2. 接続確認\n   ```\n   ping [対向機器IP]\n   traceroute [対向機器IP]\n   ```\n\n## 復旧手順\n1. 物理確認\n   - ケーブル接続確認\n   - 対向機器の状態確認\n\n2. 論理確認\n   - インターフェース再起動\n   - ルーティング設定確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20011,
+    "title": "プローブログ監視対応手順",
+    "category": "監視プローブ",
+    "system_type": "GATEWAY",
+    "keywords": "ログ監視,監視プローブ,GATEWAY,対応,手順",
+    "service_check": "1. プローブ状態確認\n   ```\n   /opt/monitoring/bin/probe-status.sh\n   ps aux | grep probe\n   ```\n\n2. ログ確認\n   ```\n   tail -f /var/log/probe/probe.log\n   ```",
+    "recovery_procedure": "1. プローブ再起動\n   ```\n   /opt/monitoring/bin/restart-probe.sh\n   ```\n\n2. 設定確認\n   - /etc/probe/config.yml の確認",
+    "full_content": "# プローブログ監視対応手順\n\n## 概要\nログ監視が発生した場合の対応手順です。\n\n## 対象システム\nGATEWAY\n\n## 確認手順\n1. プローブ状態確認\n   ```\n   /opt/monitoring/bin/probe-status.sh\n   ps aux | grep probe\n   ```\n\n2. ログ確認\n   ```\n   tail -f /var/log/probe/probe.log\n   ```\n\n## 復旧手順\n1. プローブ再起動\n   ```\n   /opt/monitoring/bin/restart-probe.sh\n   ```\n\n2. 設定確認\n   - /etc/probe/config.yml の確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20012,
+    "title": "DNSマルウェア検知対応手順",
+    "category": "セキュリティ",
+    "system_type": "CDNS",
+    "keywords": "マルウェア検知,セキュリティ,CDNS,対応,手順",
+    "service_check": "1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```",
+    "recovery_procedure": "1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査",
+    "full_content": "# DNSマルウェア検知対応手順\n\n## 概要\nマルウェア検知が発生した場合の対応手順です。\n\n## 対象システム\nCDNS\n\n## 確認手順\n1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```\n\n## 復旧手順\n1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20013,
+    "title": "NWリンクダウン対応手順",
+    "category": "ネットワーク",
+    "system_type": "NW",
+    "keywords": "リンクダウン,ネットワーク,NW,対応,手順",
+    "service_check": "1. インターフェース確認\n   ```\n   ip link show\n   ip addr show\n   ip route show\n   ```\n\n2. 接続確認\n   ```\n   ping [対向機器IP]\n   traceroute [対向機器IP]\n   ```",
+    "recovery_procedure": "1. 物理確認\n   - ケーブル接続確認\n   - 対向機器の状態確認\n\n2. 論理確認\n   - インターフェース再起動\n   - ルーティング設定確認",
+    "full_content": "# NWリンクダウン対応手順\n\n## 概要\nリンクダウンが発生した場合の対応手順です。\n\n## 対象システム\nNW\n\n## 確認手順\n1. インターフェース確認\n   ```\n   ip link show\n   ip addr show\n   ip route show\n   ```\n\n2. 接続確認\n   ```\n   ping [対向機器IP]\n   traceroute [対向機器IP]\n   ```\n\n## 復旧手順\n1. 物理確認\n   - ケーブル接続確認\n   - 対向機器の状態確認\n\n2. 論理確認\n   - インターフェース再起動\n   - ルーティング設定確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20014,
+    "title": "リソースロードアベレージ対応手順",
+    "category": "リソース監視",
+    "system_type": "共通",
+    "keywords": "ロードアベレージ,リソース監視,共通,対応,手順",
+    "service_check": "1. リソース状態確認\n   ```\n   top -bn1 | head -20\n   free -h\n   df -h\n   ```\n\n2. プロセス確認\n   ```\n   ps aux --sort=-%cpu | head -10\n   ps aux --sort=-%mem | head -10\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - 不要プロセスの停止\n   - キャッシュクリア: sync; echo 3 > /proc/sys/vm/drop_caches\n\n2. 恒久対応\n   - リソース増強の検討\n   - アプリケーションチューニング",
+    "full_content": "# リソースロードアベレージ対応手順\n\n## 概要\nロードアベレージが発生した場合の対応手順です。\n\n## 対象システム\n共通\n\n## 確認手順\n1. リソース状態確認\n   ```\n   top -bn1 | head -20\n   free -h\n   df -h\n   ```\n\n2. プロセス確認\n   ```\n   ps aux --sort=-%cpu | head -10\n   ps aux --sort=-%mem | head -10\n   ```\n\n## 復旧手順\n1. 一時対応\n   - 不要プロセスの停止\n   - キャッシュクリア: sync; echo 3 > /proc/sys/vm/drop_caches\n\n2. 恒久対応\n   - リソース増強の検討\n   - アプリケーションチューニング\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20015,
+    "title": "アプリワーカー異常対応手順",
+    "category": "アプリケーション",
+    "system_type": "APP",
+    "keywords": "ワーカー異常,アプリケーション,APP,対応,手順",
+    "service_check": "1. サービス状態確認\n   ```\n   systemctl status [service]\n   curl -v http://localhost:[port]/health\n   ```\n\n2. ログ確認\n   ```\n   journalctl -u [service] -n 100\n   tail -f /var/log/[service]/error.log\n   ```",
+    "recovery_procedure": "1. サービス再起動\n   ```\n   systemctl restart [service]\n   ```\n\n2. 依存サービス確認\n   - DB接続確認\n   - キャッシュ接続確認",
+    "full_content": "# アプリワーカー異常対応手順\n\n## 概要\nワーカー異常が発生した場合の対応手順です。\n\n## 対象システム\nAPP\n\n## 確認手順\n1. サービス状態確認\n   ```\n   systemctl status [service]\n   curl -v http://localhost:[port]/health\n   ```\n\n2. ログ確認\n   ```\n   journalctl -u [service] -n 100\n   tail -f /var/log/[service]/error.log\n   ```\n\n## 復旧手順\n1. サービス再起動\n   ```\n   systemctl restart [service]\n   ```\n\n2. 依存サービス確認\n   - DB接続確認\n   - キャッシュ接続確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20016,
+    "title": "アプリ応答遅延対応手順",
+    "category": "アプリケーション",
+    "system_type": "APP",
+    "keywords": "応答遅延,アプリケーション,APP,対応,手順",
+    "service_check": "1. サービス状態確認\n   ```\n   systemctl status [service]\n   curl -v http://localhost:[port]/health\n   ```\n\n2. ログ確認\n   ```\n   journalctl -u [service] -n 100\n   tail -f /var/log/[service]/error.log\n   ```",
+    "recovery_procedure": "1. サービス再起動\n   ```\n   systemctl restart [service]\n   ```\n\n2. 依存サービス確認\n   - DB接続確認\n   - キャッシュ接続確認",
+    "full_content": "# アプリ応答遅延対応手順\n\n## 概要\n応答遅延が発生した場合の対応手順です。\n\n## 対象システム\nAPP\n\n## 確認手順\n1. サービス状態確認\n   ```\n   systemctl status [service]\n   curl -v http://localhost:[port]/health\n   ```\n\n2. ログ確認\n   ```\n   journalctl -u [service] -n 100\n   tail -f /var/log/[service]/error.log\n   ```\n\n## 復旧手順\n1. サービス再起動\n   ```\n   systemctl restart [service]\n   ```\n\n2. 依存サービス確認\n   - DB接続確認\n   - キャッシュ接続確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20017,
+    "title": "ストレージNFS異常対応手順",
+    "category": "ストレージ",
+    "system_type": "SRV",
+    "keywords": "NFS異常,ストレージ,SRV,対応,手順",
+    "service_check": "1. ストレージ状態確認\n   ```\n   lsblk\n   df -h\n   cat /proc/mdstat\n   ```\n\n2. I/O確認\n   ```\n   iostat -x 1 5\n   iotop\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - マウント再実行\n   - ストレージサービス再起動\n\n2. ハードウェア対応\n   - ディスク交換の検討\n   - RAID再構築",
+    "full_content": "# ストレージNFS異常対応手順\n\n## 概要\nNFS異常が発生した場合の対応手順です。\n\n## 対象システム\nSRV\n\n## 確認手順\n1. ストレージ状態確認\n   ```\n   lsblk\n   df -h\n   cat /proc/mdstat\n   ```\n\n2. I/O確認\n   ```\n   iostat -x 1 5\n   iotop\n   ```\n\n## 復旧手順\n1. 一時対応\n   - マウント再実行\n   - ストレージサービス再起動\n\n2. ハードウェア対応\n   - ディスク交換の検討\n   - RAID再構築\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20018,
+    "title": "NWパケットロス対応手順",
+    "category": "ネットワーク",
+    "system_type": "NW",
+    "keywords": "パケットロス,ネットワーク,NW,対応,手順",
+    "service_check": "1. インターフェース確認\n   ```\n   ip link show\n   ip addr show\n   ip route show\n   ```\n\n2. 接続確認\n   ```\n   ping [対向機器IP]\n   traceroute [対向機器IP]\n   ```",
+    "recovery_procedure": "1. 物理確認\n   - ケーブル接続確認\n   - 対向機器の状態確認\n\n2. 論理確認\n   - インターフェース再起動\n   - ルーティング設定確認",
+    "full_content": "# NWパケットロス対応手順\n\n## 概要\nパケットロスが発生した場合の対応手順です。\n\n## 対象システム\nNW\n\n## 確認手順\n1. インターフェース確認\n   ```\n   ip link show\n   ip addr show\n   ip route show\n   ```\n\n2. 接続確認\n   ```\n   ping [対向機器IP]\n   traceroute [対向機器IP]\n   ```\n\n## 復旧手順\n1. 物理確認\n   - ケーブル接続確認\n   - 対向機器の状態確認\n\n2. 論理確認\n   - インターフェース再起動\n   - ルーティング設定確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20019,
+    "title": "DNS認証失敗対応手順",
+    "category": "セキュリティ",
+    "system_type": "CDNS",
+    "keywords": "認証失敗,セキュリティ,CDNS,対応,手順",
+    "service_check": "1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```",
+    "recovery_procedure": "1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査",
+    "full_content": "# DNS認証失敗対応手順\n\n## 概要\n認証失敗が発生した場合の対応手順です。\n\n## 対象システム\nCDNS\n\n## 確認手順\n1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```\n\n## 復旧手順\n1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20020,
+    "title": "リソースiowait対応手順",
+    "category": "リソース監視",
+    "system_type": "共通",
+    "keywords": "iowait,リソース監視,共通,対応,手順",
+    "service_check": "1. リソース状態確認\n   ```\n   top -bn1 | head -20\n   free -h\n   df -h\n   ```\n\n2. プロセス確認\n   ```\n   ps aux --sort=-%cpu | head -10\n   ps aux --sort=-%mem | head -10\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - 不要プロセスの停止\n   - キャッシュクリア: sync; echo 3 > /proc/sys/vm/drop_caches\n\n2. 恒久対応\n   - リソース増強の検討\n   - アプリケーションチューニング",
+    "full_content": "# リソースiowait対応手順\n\n## 概要\niowaitが発生した場合の対応手順です。\n\n## 対象システム\n共通\n\n## 確認手順\n1. リソース状態確認\n   ```\n   top -bn1 | head -20\n   free -h\n   df -h\n   ```\n\n2. プロセス確認\n   ```\n   ps aux --sort=-%cpu | head -10\n   ps aux --sort=-%mem | head -10\n   ```\n\n## 復旧手順\n1. 一時対応\n   - 不要プロセスの停止\n   - キャッシュクリア: sync; echo 3 > /proc/sys/vm/drop_caches\n\n2. 恒久対応\n   - リソース増強の検討\n   - アプリケーションチューニング\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20021,
+    "title": "DNS不正アクセス対応手順",
+    "category": "セキュリティ",
+    "system_type": "CDNS",
+    "keywords": "不正アクセス,セキュリティ,CDNS,対応,手順",
+    "service_check": "1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```",
+    "recovery_procedure": "1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査",
+    "full_content": "# DNS不正アクセス対応手順\n\n## 概要\n不正アクセスが発生した場合の対応手順です。\n\n## 対象システム\nCDNS\n\n## 確認手順\n1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```\n\n## 復旧手順\n1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20022,
+    "title": "DBクエリ遅延対応手順",
+    "category": "データベース",
+    "system_type": "DB",
+    "keywords": "クエリ遅延,データベース,DB,対応,手順",
+    "service_check": "1. DB状態確認\n   ```sql\n   SELECT * FROM pg_stat_activity;\n   SHOW PROCESSLIST;\n   ```\n\n2. ログ確認\n   ```\n   tail -100 /var/log/postgresql/postgresql.log\n   tail -100 /var/log/mysql/error.log\n   ```",
+    "recovery_procedure": "1. 接続リセット\n   - 長時間クエリの終了\n   - コネクションプールリセット\n\n2. 性能改善\n   - スロークエリの特定と最適化\n   - インデックス追加の検討",
+    "full_content": "# DBクエリ遅延対応手順\n\n## 概要\nクエリ遅延が発生した場合の対応手順です。\n\n## 対象システム\nDB\n\n## 確認手順\n1. DB状態確認\n   ```sql\n   SELECT * FROM pg_stat_activity;\n   SHOW PROCESSLIST;\n   ```\n\n2. ログ確認\n   ```\n   tail -100 /var/log/postgresql/postgresql.log\n   tail -100 /var/log/mysql/error.log\n   ```\n\n## 復旧手順\n1. 接続リセット\n   - 長時間クエリの終了\n   - コネクションプールリセット\n\n2. 性能改善\n   - スロークエリの特定と最適化\n   - インデックス追加の検討\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20023,
+    "title": "NW帯域超過対応手順",
+    "category": "ネットワーク",
+    "system_type": "NW",
+    "keywords": "帯域超過,ネットワーク,NW,対応,手順",
+    "service_check": "1. インターフェース確認\n   ```\n   ip link show\n   ip addr show\n   ip route show\n   ```\n\n2. 接続確認\n   ```\n   ping [対向機器IP]\n   traceroute [対向機器IP]\n   ```",
+    "recovery_procedure": "1. 物理確認\n   - ケーブル接続確認\n   - 対向機器の状態確認\n\n2. 論理確認\n   - インターフェース再起動\n   - ルーティング設定確認",
+    "full_content": "# NW帯域超過対応手順\n\n## 概要\n帯域超過が発生した場合の対応手順です。\n\n## 対象システム\nNW\n\n## 確認手順\n1. インターフェース確認\n   ```\n   ip link show\n   ip addr show\n   ip route show\n   ```\n\n2. 接続確認\n   ```\n   ping [対向機器IP]\n   traceroute [対向機器IP]\n   ```\n\n## 復旧手順\n1. 物理確認\n   - ケーブル接続確認\n   - 対向機器の状態確認\n\n2. 論理確認\n   - インターフェース再起動\n   - ルーティング設定確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20024,
+    "title": "GATEWAY監視遅延検知対応手順",
+    "category": "監視アラーム",
+    "system_type": "GATEWAY",
+    "keywords": "遅延検知,監視アラーム,GATEWAY,対応,手順",
+    "service_check": "1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡",
+    "full_content": "# GATEWAY監視遅延検知対応手順\n\n## 概要\n遅延検知が発生した場合の対応手順です。\n\n## 対象システム\nGATEWAY\n\n## 確認手順\n1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```\n\n## 復旧手順\n1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20025,
+    "title": "プローブ接続エラー対応手順",
+    "category": "監視プローブ",
+    "system_type": "GATEWAY",
+    "keywords": "接続エラー,監視プローブ,GATEWAY,対応,手順",
+    "service_check": "1. プローブ状態確認\n   ```\n   /opt/monitoring/bin/probe-status.sh\n   ps aux | grep probe\n   ```\n\n2. ログ確認\n   ```\n   tail -f /var/log/probe/probe.log\n   ```",
+    "recovery_procedure": "1. プローブ再起動\n   ```\n   /opt/monitoring/bin/restart-probe.sh\n   ```\n\n2. 設定確認\n   - /etc/probe/config.yml の確認",
+    "full_content": "# プローブ接続エラー対応手順\n\n## 概要\n接続エラーが発生した場合の対応手順です。\n\n## 対象システム\nGATEWAY\n\n## 確認手順\n1. プローブ状態確認\n   ```\n   /opt/monitoring/bin/probe-status.sh\n   ps aux | grep probe\n   ```\n\n2. ログ確認\n   ```\n   tail -f /var/log/probe/probe.log\n   ```\n\n## 復旧手順\n1. プローブ再起動\n   ```\n   /opt/monitoring/bin/restart-probe.sh\n   ```\n\n2. 設定確認\n   - /etc/probe/config.yml の確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20026,
+    "title": "リソーススワップ使用対応手順",
+    "category": "リソース監視",
+    "system_type": "共通",
+    "keywords": "スワップ使用,リソース監視,共通,対応,手順",
+    "service_check": "1. リソース状態確認\n   ```\n   top -bn1 | head -20\n   free -h\n   df -h\n   ```\n\n2. プロセス確認\n   ```\n   ps aux --sort=-%cpu | head -10\n   ps aux --sort=-%mem | head -10\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - 不要プロセスの停止\n   - キャッシュクリア: sync; echo 3 > /proc/sys/vm/drop_caches\n\n2. 恒久対応\n   - リソース増強の検討\n   - アプリケーションチューニング",
+    "full_content": "# リソーススワップ使用対応手順\n\n## 概要\nスワップ使用が発生した場合の対応手順です。\n\n## 対象システム\n共通\n\n## 確認手順\n1. リソース状態確認\n   ```\n   top -bn1 | head -20\n   free -h\n   df -h\n   ```\n\n2. プロセス確認\n   ```\n   ps aux --sort=-%cpu | head -10\n   ps aux --sort=-%mem | head -10\n   ```\n\n## 復旧手順\n1. 一時対応\n   - 不要プロセスの停止\n   - キャッシュクリア: sync; echo 3 > /proc/sys/vm/drop_caches\n\n2. 恒久対応\n   - リソース増強の検討\n   - アプリケーションチューニング\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20027,
+    "title": "リソースCPU高負荷対応手順",
+    "category": "リソース監視",
+    "system_type": "共通",
+    "keywords": "CPU高負荷,リソース監視,共通,対応,手順",
+    "service_check": "1. リソース状態確認\n   ```\n   top -bn1 | head -20\n   free -h\n   df -h\n   ```\n\n2. プロセス確認\n   ```\n   ps aux --sort=-%cpu | head -10\n   ps aux --sort=-%mem | head -10\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - 不要プロセスの停止\n   - キャッシュクリア: sync; echo 3 > /proc/sys/vm/drop_caches\n\n2. 恒久対応\n   - リソース増強の検討\n   - アプリケーションチューニング",
+    "full_content": "# リソースCPU高負荷対応手順\n\n## 概要\nCPU高負荷が発生した場合の対応手順です。\n\n## 対象システム\n共通\n\n## 確認手順\n1. リソース状態確認\n   ```\n   top -bn1 | head -20\n   free -h\n   df -h\n   ```\n\n2. プロセス確認\n   ```\n   ps aux --sort=-%cpu | head -10\n   ps aux --sort=-%mem | head -10\n   ```\n\n## 復旧手順\n1. 一時対応\n   - 不要プロセスの停止\n   - キャッシュクリア: sync; echo 3 > /proc/sys/vm/drop_caches\n\n2. 恒久対応\n   - リソース増強の検討\n   - アプリケーションチューニング\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20028,
+    "title": "DBWAL蓄積対応手順",
+    "category": "データベース",
+    "system_type": "DB",
+    "keywords": "WAL蓄積,データベース,DB,対応,手順",
+    "service_check": "1. DB状態確認\n   ```sql\n   SELECT * FROM pg_stat_activity;\n   SHOW PROCESSLIST;\n   ```\n\n2. ログ確認\n   ```\n   tail -100 /var/log/postgresql/postgresql.log\n   tail -100 /var/log/mysql/error.log\n   ```",
+    "recovery_procedure": "1. 接続リセット\n   - 長時間クエリの終了\n   - コネクションプールリセット\n\n2. 性能改善\n   - スロークエリの特定と最適化\n   - インデックス追加の検討",
+    "full_content": "# DBWAL蓄積対応手順\n\n## 概要\nWAL蓄積が発生した場合の対応手順です。\n\n## 対象システム\nDB\n\n## 確認手順\n1. DB状態確認\n   ```sql\n   SELECT * FROM pg_stat_activity;\n   SHOW PROCESSLIST;\n   ```\n\n2. ログ確認\n   ```\n   tail -100 /var/log/postgresql/postgresql.log\n   tail -100 /var/log/mysql/error.log\n   ```\n\n## 復旧手順\n1. 接続リセット\n   - 長時間クエリの終了\n   - コネクションプールリセット\n\n2. 性能改善\n   - スロークエリの特定と最適化\n   - インデックス追加の検討\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20029,
+    "title": "GATEWAY監視遅延検知対応手順",
+    "category": "監視アラーム",
+    "system_type": "GATEWAY",
+    "keywords": "遅延検知,監視アラーム,GATEWAY,対応,手順",
+    "service_check": "1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡",
+    "full_content": "# GATEWAY監視遅延検知対応手順\n\n## 概要\n遅延検知が発生した場合の対応手順です。\n\n## 対象システム\nGATEWAY\n\n## 確認手順\n1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```\n\n## 復旧手順\n1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20030,
+    "title": "監視接続断対応手順",
+    "category": "監視アラーム",
+    "system_type": "PHOENIX",
+    "keywords": "接続断,監視アラーム,PHOENIX,対応,手順",
+    "service_check": "1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡",
+    "full_content": "# 監視接続断対応手順\n\n## 概要\n接続断が発生した場合の対応手順です。\n\n## 対象システム\nPHOENIX\n\n## 確認手順\n1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```\n\n## 復旧手順\n1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20031,
+    "title": "DBレプリケーション遅延対応手順",
+    "category": "データベース",
+    "system_type": "DB",
+    "keywords": "レプリケーション遅延,データベース,DB,対応,手順",
+    "service_check": "1. DB状態確認\n   ```sql\n   SELECT * FROM pg_stat_activity;\n   SHOW PROCESSLIST;\n   ```\n\n2. ログ確認\n   ```\n   tail -100 /var/log/postgresql/postgresql.log\n   tail -100 /var/log/mysql/error.log\n   ```",
+    "recovery_procedure": "1. 接続リセット\n   - 長時間クエリの終了\n   - コネクションプールリセット\n\n2. 性能改善\n   - スロークエリの特定と最適化\n   - インデックス追加の検討",
+    "full_content": "# DBレプリケーション遅延対応手順\n\n## 概要\nレプリケーション遅延が発生した場合の対応手順です。\n\n## 対象システム\nDB\n\n## 確認手順\n1. DB状態確認\n   ```sql\n   SELECT * FROM pg_stat_activity;\n   SHOW PROCESSLIST;\n   ```\n\n2. ログ確認\n   ```\n   tail -100 /var/log/postgresql/postgresql.log\n   tail -100 /var/log/mysql/error.log\n   ```\n\n## 復旧手順\n1. 接続リセット\n   - 長時間クエリの終了\n   - コネクションプールリセット\n\n2. 性能改善\n   - スロークエリの特定と最適化\n   - インデックス追加の検討\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20032,
+    "title": "リソースファイルディスクリプタ対応手順",
+    "category": "リソース監視",
+    "system_type": "共通",
+    "keywords": "ファイルディスクリプタ,リソース監視,共通,対応,手順",
+    "service_check": "1. リソース状態確認\n   ```\n   top -bn1 | head -20\n   free -h\n   df -h\n   ```\n\n2. プロセス確認\n   ```\n   ps aux --sort=-%cpu | head -10\n   ps aux --sort=-%mem | head -10\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - 不要プロセスの停止\n   - キャッシュクリア: sync; echo 3 > /proc/sys/vm/drop_caches\n\n2. 恒久対応\n   - リソース増強の検討\n   - アプリケーションチューニング",
+    "full_content": "# リソースファイルディスクリプタ対応手順\n\n## 概要\nファイルディスクリプタが発生した場合の対応手順です。\n\n## 対象システム\n共通\n\n## 確認手順\n1. リソース状態確認\n   ```\n   top -bn1 | head -20\n   free -h\n   df -h\n   ```\n\n2. プロセス確認\n   ```\n   ps aux --sort=-%cpu | head -10\n   ps aux --sort=-%mem | head -10\n   ```\n\n## 復旧手順\n1. 一時対応\n   - 不要プロセスの停止\n   - キャッシュクリア: sync; echo 3 > /proc/sys/vm/drop_caches\n\n2. 恒久対応\n   - リソース増強の検討\n   - アプリケーションチューニング\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20033,
+    "title": "GATEWAY監視ステータス変更対応手順",
+    "category": "監視アラーム",
+    "system_type": "GATEWAY",
+    "keywords": "ステータス変更,監視アラーム,GATEWAY,対応,手順",
+    "service_check": "1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡",
+    "full_content": "# GATEWAY監視ステータス変更対応手順\n\n## 概要\nステータス変更が発生した場合の対応手順です。\n\n## 対象システム\nGATEWAY\n\n## 確認手順\n1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```\n\n## 復旧手順\n1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20034,
+    "title": "プローブポート監視対応手順",
+    "category": "監視プローブ",
+    "system_type": "GATEWAY",
+    "keywords": "ポート監視,監視プローブ,GATEWAY,対応,手順",
+    "service_check": "1. プローブ状態確認\n   ```\n   /opt/monitoring/bin/probe-status.sh\n   ps aux | grep probe\n   ```\n\n2. ログ確認\n   ```\n   tail -f /var/log/probe/probe.log\n   ```",
+    "recovery_procedure": "1. プローブ再起動\n   ```\n   /opt/monitoring/bin/restart-probe.sh\n   ```\n\n2. 設定確認\n   - /etc/probe/config.yml の確認",
+    "full_content": "# プローブポート監視対応手順\n\n## 概要\nポート監視が発生した場合の対応手順です。\n\n## 対象システム\nGATEWAY\n\n## 確認手順\n1. プローブ状態確認\n   ```\n   /opt/monitoring/bin/probe-status.sh\n   ps aux | grep probe\n   ```\n\n2. ログ確認\n   ```\n   tail -f /var/log/probe/probe.log\n   ```\n\n## 復旧手順\n1. プローブ再起動\n   ```\n   /opt/monitoring/bin/restart-probe.sh\n   ```\n\n2. 設定確認\n   - /etc/probe/config.yml の確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20035,
+    "title": "監視応答異常対応手順",
+    "category": "監視アラーム",
+    "system_type": "PHOENIX",
+    "keywords": "応答異常,監視アラーム,PHOENIX,対応,手順",
+    "service_check": "1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡",
+    "full_content": "# 監視応答異常対応手順\n\n## 概要\n応答異常が発生した場合の対応手順です。\n\n## 対象システム\nPHOENIX\n\n## 確認手順\n1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```\n\n## 復旧手順\n1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20036,
+    "title": "DBバックアップ失敗対応手順",
+    "category": "データベース",
+    "system_type": "DB",
+    "keywords": "バックアップ失敗,データベース,DB,対応,手順",
+    "service_check": "1. DB状態確認\n   ```sql\n   SELECT * FROM pg_stat_activity;\n   SHOW PROCESSLIST;\n   ```\n\n2. ログ確認\n   ```\n   tail -100 /var/log/postgresql/postgresql.log\n   tail -100 /var/log/mysql/error.log\n   ```",
+    "recovery_procedure": "1. 接続リセット\n   - 長時間クエリの終了\n   - コネクションプールリセット\n\n2. 性能改善\n   - スロークエリの特定と最適化\n   - インデックス追加の検討",
+    "full_content": "# DBバックアップ失敗対応手順\n\n## 概要\nバックアップ失敗が発生した場合の対応手順です。\n\n## 対象システム\nDB\n\n## 確認手順\n1. DB状態確認\n   ```sql\n   SELECT * FROM pg_stat_activity;\n   SHOW PROCESSLIST;\n   ```\n\n2. ログ確認\n   ```\n   tail -100 /var/log/postgresql/postgresql.log\n   tail -100 /var/log/mysql/error.log\n   ```\n\n## 復旧手順\n1. 接続リセット\n   - 長時間クエリの終了\n   - コネクションプールリセット\n\n2. 性能改善\n   - スロークエリの特定と最適化\n   - インデックス追加の検討\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20037,
+    "title": "アプリセッション異常対応手順",
+    "category": "アプリケーション",
+    "system_type": "APP",
+    "keywords": "セッション異常,アプリケーション,APP,対応,手順",
+    "service_check": "1. サービス状態確認\n   ```\n   systemctl status [service]\n   curl -v http://localhost:[port]/health\n   ```\n\n2. ログ確認\n   ```\n   journalctl -u [service] -n 100\n   tail -f /var/log/[service]/error.log\n   ```",
+    "recovery_procedure": "1. サービス再起動\n   ```\n   systemctl restart [service]\n   ```\n\n2. 依存サービス確認\n   - DB接続確認\n   - キャッシュ接続確認",
+    "full_content": "# アプリセッション異常対応手順\n\n## 概要\nセッション異常が発生した場合の対応手順です。\n\n## 対象システム\nAPP\n\n## 確認手順\n1. サービス状態確認\n   ```\n   systemctl status [service]\n   curl -v http://localhost:[port]/health\n   ```\n\n2. ログ確認\n   ```\n   journalctl -u [service] -n 100\n   tail -f /var/log/[service]/error.log\n   ```\n\n## 復旧手順\n1. サービス再起動\n   ```\n   systemctl restart [service]\n   ```\n\n2. 依存サービス確認\n   - DB接続確認\n   - キャッシュ接続確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20038,
+    "title": "監視遅延検知対応手順",
+    "category": "監視アラーム",
+    "system_type": "PHOENIX",
+    "keywords": "遅延検知,監視アラーム,PHOENIX,対応,手順",
+    "service_check": "1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡",
+    "full_content": "# 監視遅延検知対応手順\n\n## 概要\n遅延検知が発生した場合の対応手順です。\n\n## 対象システム\nPHOENIX\n\n## 確認手順\n1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```\n\n## 復旧手順\n1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20039,
+    "title": "LB権限エラー対応手順",
+    "category": "セキュリティ",
+    "system_type": "LB-CORE",
+    "keywords": "権限エラー,セキュリティ,LB-CORE,対応,手順",
+    "service_check": "1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```",
+    "recovery_procedure": "1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査",
+    "full_content": "# LB権限エラー対応手順\n\n## 概要\n権限エラーが発生した場合の対応手順です。\n\n## 対象システム\nLB-CORE\n\n## 確認手順\n1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```\n\n## 復旧手順\n1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20040,
+    "title": "リソースメモリ不足対応手順",
+    "category": "リソース監視",
+    "system_type": "共通",
+    "keywords": "メモリ不足,リソース監視,共通,対応,手順",
+    "service_check": "1. リソース状態確認\n   ```\n   top -bn1 | head -20\n   free -h\n   df -h\n   ```\n\n2. プロセス確認\n   ```\n   ps aux --sort=-%cpu | head -10\n   ps aux --sort=-%mem | head -10\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - 不要プロセスの停止\n   - キャッシュクリア: sync; echo 3 > /proc/sys/vm/drop_caches\n\n2. 恒久対応\n   - リソース増強の検討\n   - アプリケーションチューニング",
+    "full_content": "# リソースメモリ不足対応手順\n\n## 概要\nメモリ不足が発生した場合の対応手順です。\n\n## 対象システム\n共通\n\n## 確認手順\n1. リソース状態確認\n   ```\n   top -bn1 | head -20\n   free -h\n   df -h\n   ```\n\n2. プロセス確認\n   ```\n   ps aux --sort=-%cpu | head -10\n   ps aux --sort=-%mem | head -10\n   ```\n\n## 復旧手順\n1. 一時対応\n   - 不要プロセスの停止\n   - キャッシュクリア: sync; echo 3 > /proc/sys/vm/drop_caches\n\n2. 恒久対応\n   - リソース増強の検討\n   - アプリケーションチューニング\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20041,
+    "title": "GATEWAY監視接続断対応手順",
+    "category": "監視アラーム",
+    "system_type": "GATEWAY",
+    "keywords": "接続断,監視アラーム,GATEWAY,対応,手順",
+    "service_check": "1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡",
+    "full_content": "# GATEWAY監視接続断対応手順\n\n## 概要\n接続断が発生した場合の対応手順です。\n\n## 対象システム\nGATEWAY\n\n## 確認手順\n1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```\n\n## 復旧手順\n1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20042,
+    "title": "アプリキャッシュ異常対応手順",
+    "category": "アプリケーション",
+    "system_type": "APP",
+    "keywords": "キャッシュ異常,アプリケーション,APP,対応,手順",
+    "service_check": "1. サービス状態確認\n   ```\n   systemctl status [service]\n   curl -v http://localhost:[port]/health\n   ```\n\n2. ログ確認\n   ```\n   journalctl -u [service] -n 100\n   tail -f /var/log/[service]/error.log\n   ```",
+    "recovery_procedure": "1. サービス再起動\n   ```\n   systemctl restart [service]\n   ```\n\n2. 依存サービス確認\n   - DB接続確認\n   - キャッシュ接続確認",
+    "full_content": "# アプリキャッシュ異常対応手順\n\n## 概要\nキャッシュ異常が発生した場合の対応手順です。\n\n## 対象システム\nAPP\n\n## 確認手順\n1. サービス状態確認\n   ```\n   systemctl status [service]\n   curl -v http://localhost:[port]/health\n   ```\n\n2. ログ確認\n   ```\n   journalctl -u [service] -n 100\n   tail -f /var/log/[service]/error.log\n   ```\n\n## 復旧手順\n1. サービス再起動\n   ```\n   systemctl restart [service]\n   ```\n\n2. 依存サービス確認\n   - DB接続確認\n   - キャッシュ接続確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20043,
+    "title": "プローブテスト失敗対応手順",
+    "category": "監視プローブ",
+    "system_type": "GATEWAY",
+    "keywords": "テスト失敗,監視プローブ,GATEWAY,対応,手順",
+    "service_check": "1. プローブ状態確認\n   ```\n   /opt/monitoring/bin/probe-status.sh\n   ps aux | grep probe\n   ```\n\n2. ログ確認\n   ```\n   tail -f /var/log/probe/probe.log\n   ```",
+    "recovery_procedure": "1. プローブ再起動\n   ```\n   /opt/monitoring/bin/restart-probe.sh\n   ```\n\n2. 設定確認\n   - /etc/probe/config.yml の確認",
+    "full_content": "# プローブテスト失敗対応手順\n\n## 概要\nテスト失敗が発生した場合の対応手順です。\n\n## 対象システム\nGATEWAY\n\n## 確認手順\n1. プローブ状態確認\n   ```\n   /opt/monitoring/bin/probe-status.sh\n   ps aux | grep probe\n   ```\n\n2. ログ確認\n   ```\n   tail -f /var/log/probe/probe.log\n   ```\n\n## 復旧手順\n1. プローブ再起動\n   ```\n   /opt/monitoring/bin/restart-probe.sh\n   ```\n\n2. 設定確認\n   - /etc/probe/config.yml の確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20044,
+    "title": "監視接続断対応手順",
+    "category": "監視アラーム",
+    "system_type": "PHOENIX",
+    "keywords": "接続断,監視アラーム,PHOENIX,対応,手順",
+    "service_check": "1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡",
+    "full_content": "# 監視接続断対応手順\n\n## 概要\n接続断が発生した場合の対応手順です。\n\n## 対象システム\nPHOENIX\n\n## 確認手順\n1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```\n\n## 復旧手順\n1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20045,
+    "title": "GATEWAY監視遅延検知対応手順",
+    "category": "監視アラーム",
+    "system_type": "GATEWAY",
+    "keywords": "遅延検知,監視アラーム,GATEWAY,対応,手順",
+    "service_check": "1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡",
+    "full_content": "# GATEWAY監視遅延検知対応手順\n\n## 概要\n遅延検知が発生した場合の対応手順です。\n\n## 対象システム\nGATEWAY\n\n## 確認手順\n1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```\n\n## 復旧手順\n1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20046,
+    "title": "NWBGP異常対応手順",
+    "category": "ネットワーク",
+    "system_type": "NW",
+    "keywords": "BGP異常,ネットワーク,NW,対応,手順",
+    "service_check": "1. インターフェース確認\n   ```\n   ip link show\n   ip addr show\n   ip route show\n   ```\n\n2. 接続確認\n   ```\n   ping [対向機器IP]\n   traceroute [対向機器IP]\n   ```",
+    "recovery_procedure": "1. 物理確認\n   - ケーブル接続確認\n   - 対向機器の状態確認\n\n2. 論理確認\n   - インターフェース再起動\n   - ルーティング設定確認",
+    "full_content": "# NWBGP異常対応手順\n\n## 概要\nBGP異常が発生した場合の対応手順です。\n\n## 対象システム\nNW\n\n## 確認手順\n1. インターフェース確認\n   ```\n   ip link show\n   ip addr show\n   ip route show\n   ```\n\n2. 接続確認\n   ```\n   ping [対向機器IP]\n   traceroute [対向機器IP]\n   ```\n\n## 復旧手順\n1. 物理確認\n   - ケーブル接続確認\n   - 対向機器の状態確認\n\n2. 論理確認\n   - インターフェース再起動\n   - ルーティング設定確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20047,
+    "title": "DNSSSL異常対応手順",
+    "category": "セキュリティ",
+    "system_type": "CDNS",
+    "keywords": "SSL異常,セキュリティ,CDNS,対応,手順",
+    "service_check": "1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```",
+    "recovery_procedure": "1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査",
+    "full_content": "# DNSSSL異常対応手順\n\n## 概要\nSSL異常が発生した場合の対応手順です。\n\n## 対象システム\nCDNS\n\n## 確認手順\n1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```\n\n## 復旧手順\n1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20048,
+    "title": "NWパケットロス対応手順",
+    "category": "ネットワーク",
+    "system_type": "NW",
+    "keywords": "パケットロス,ネットワーク,NW,対応,手順",
+    "service_check": "1. インターフェース確認\n   ```\n   ip link show\n   ip addr show\n   ip route show\n   ```\n\n2. 接続確認\n   ```\n   ping [対向機器IP]\n   traceroute [対向機器IP]\n   ```",
+    "recovery_procedure": "1. 物理確認\n   - ケーブル接続確認\n   - 対向機器の状態確認\n\n2. 論理確認\n   - インターフェース再起動\n   - ルーティング設定確認",
+    "full_content": "# NWパケットロス対応手順\n\n## 概要\nパケットロスが発生した場合の対応手順です。\n\n## 対象システム\nNW\n\n## 確認手順\n1. インターフェース確認\n   ```\n   ip link show\n   ip addr show\n   ip route show\n   ```\n\n2. 接続確認\n   ```\n   ping [対向機器IP]\n   traceroute [対向機器IP]\n   ```\n\n## 復旧手順\n1. 物理確認\n   - ケーブル接続確認\n   - 対向機器の状態確認\n\n2. 論理確認\n   - インターフェース再起動\n   - ルーティング設定確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20049,
+    "title": "リソースロードアベレージ対応手順",
+    "category": "リソース監視",
+    "system_type": "共通",
+    "keywords": "ロードアベレージ,リソース監視,共通,対応,手順",
+    "service_check": "1. リソース状態確認\n   ```\n   top -bn1 | head -20\n   free -h\n   df -h\n   ```\n\n2. プロセス確認\n   ```\n   ps aux --sort=-%cpu | head -10\n   ps aux --sort=-%mem | head -10\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - 不要プロセスの停止\n   - キャッシュクリア: sync; echo 3 > /proc/sys/vm/drop_caches\n\n2. 恒久対応\n   - リソース増強の検討\n   - アプリケーションチューニング",
+    "full_content": "# リソースロードアベレージ対応手順\n\n## 概要\nロードアベレージが発生した場合の対応手順です。\n\n## 対象システム\n共通\n\n## 確認手順\n1. リソース状態確認\n   ```\n   top -bn1 | head -20\n   free -h\n   df -h\n   ```\n\n2. プロセス確認\n   ```\n   ps aux --sort=-%cpu | head -10\n   ps aux --sort=-%mem | head -10\n   ```\n\n## 復旧手順\n1. 一時対応\n   - 不要プロセスの停止\n   - キャッシュクリア: sync; echo 3 > /proc/sys/vm/drop_caches\n\n2. 恒久対応\n   - リソース増強の検討\n   - アプリケーションチューニング\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20050,
+    "title": "ストレージストレージプール異常対応手順",
+    "category": "ストレージ",
+    "system_type": "SRV",
+    "keywords": "ストレージプール異常,ストレージ,SRV,対応,手順",
+    "service_check": "1. ストレージ状態確認\n   ```\n   lsblk\n   df -h\n   cat /proc/mdstat\n   ```\n\n2. I/O確認\n   ```\n   iostat -x 1 5\n   iotop\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - マウント再実行\n   - ストレージサービス再起動\n\n2. ハードウェア対応\n   - ディスク交換の検討\n   - RAID再構築",
+    "full_content": "# ストレージストレージプール異常対応手順\n\n## 概要\nストレージプール異常が発生した場合の対応手順です。\n\n## 対象システム\nSRV\n\n## 確認手順\n1. ストレージ状態確認\n   ```\n   lsblk\n   df -h\n   cat /proc/mdstat\n   ```\n\n2. I/O確認\n   ```\n   iostat -x 1 5\n   iotop\n   ```\n\n## 復旧手順\n1. 一時対応\n   - マウント再実行\n   - ストレージサービス再起動\n\n2. ハードウェア対応\n   - ディスク交換の検討\n   - RAID再構築\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20051,
+    "title": "DNSファイアウォール対応手順",
+    "category": "セキュリティ",
+    "system_type": "CDNS",
+    "keywords": "ファイアウォール,セキュリティ,CDNS,対応,手順",
+    "service_check": "1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```",
+    "recovery_procedure": "1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査",
+    "full_content": "# DNSファイアウォール対応手順\n\n## 概要\nファイアウォールが発生した場合の対応手順です。\n\n## 対象システム\nCDNS\n\n## 確認手順\n1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```\n\n## 復旧手順\n1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20052,
+    "title": "プローブポート監視対応手順",
+    "category": "監視プローブ",
+    "system_type": "GATEWAY",
+    "keywords": "ポート監視,監視プローブ,GATEWAY,対応,手順",
+    "service_check": "1. プローブ状態確認\n   ```\n   /opt/monitoring/bin/probe-status.sh\n   ps aux | grep probe\n   ```\n\n2. ログ確認\n   ```\n   tail -f /var/log/probe/probe.log\n   ```",
+    "recovery_procedure": "1. プローブ再起動\n   ```\n   /opt/monitoring/bin/restart-probe.sh\n   ```\n\n2. 設定確認\n   - /etc/probe/config.yml の確認",
+    "full_content": "# プローブポート監視対応手順\n\n## 概要\nポート監視が発生した場合の対応手順です。\n\n## 対象システム\nGATEWAY\n\n## 確認手順\n1. プローブ状態確認\n   ```\n   /opt/monitoring/bin/probe-status.sh\n   ps aux | grep probe\n   ```\n\n2. ログ確認\n   ```\n   tail -f /var/log/probe/probe.log\n   ```\n\n## 復旧手順\n1. プローブ再起動\n   ```\n   /opt/monitoring/bin/restart-probe.sh\n   ```\n\n2. 設定確認\n   - /etc/probe/config.yml の確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20053,
+    "title": "ストレージI/Oエラー対応手順",
+    "category": "ストレージ",
+    "system_type": "SRV",
+    "keywords": "I/Oエラー,ストレージ,SRV,対応,手順",
+    "service_check": "1. ストレージ状態確認\n   ```\n   lsblk\n   df -h\n   cat /proc/mdstat\n   ```\n\n2. I/O確認\n   ```\n   iostat -x 1 5\n   iotop\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - マウント再実行\n   - ストレージサービス再起動\n\n2. ハードウェア対応\n   - ディスク交換の検討\n   - RAID再構築",
+    "full_content": "# ストレージI/Oエラー対応手順\n\n## 概要\nI/Oエラーが発生した場合の対応手順です。\n\n## 対象システム\nSRV\n\n## 確認手順\n1. ストレージ状態確認\n   ```\n   lsblk\n   df -h\n   cat /proc/mdstat\n   ```\n\n2. I/O確認\n   ```\n   iostat -x 1 5\n   iotop\n   ```\n\n## 復旧手順\n1. 一時対応\n   - マウント再実行\n   - ストレージサービス再起動\n\n2. ハードウェア対応\n   - ディスク交換の検討\n   - RAID再構築\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20054,
+    "title": "DBレプリケーション遅延対応手順",
+    "category": "データベース",
+    "system_type": "DB",
+    "keywords": "レプリケーション遅延,データベース,DB,対応,手順",
+    "service_check": "1. DB状態確認\n   ```sql\n   SELECT * FROM pg_stat_activity;\n   SHOW PROCESSLIST;\n   ```\n\n2. ログ確認\n   ```\n   tail -100 /var/log/postgresql/postgresql.log\n   tail -100 /var/log/mysql/error.log\n   ```",
+    "recovery_procedure": "1. 接続リセット\n   - 長時間クエリの終了\n   - コネクションプールリセット\n\n2. 性能改善\n   - スロークエリの特定と最適化\n   - インデックス追加の検討",
+    "full_content": "# DBレプリケーション遅延対応手順\n\n## 概要\nレプリケーション遅延が発生した場合の対応手順です。\n\n## 対象システム\nDB\n\n## 確認手順\n1. DB状態確認\n   ```sql\n   SELECT * FROM pg_stat_activity;\n   SHOW PROCESSLIST;\n   ```\n\n2. ログ確認\n   ```\n   tail -100 /var/log/postgresql/postgresql.log\n   tail -100 /var/log/mysql/error.log\n   ```\n\n## 復旧手順\n1. 接続リセット\n   - 長時間クエリの終了\n   - コネクションプールリセット\n\n2. 性能改善\n   - スロークエリの特定と最適化\n   - インデックス追加の検討\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20055,
+    "title": "DNSマルウェア検知対応手順",
+    "category": "セキュリティ",
+    "system_type": "CDNS",
+    "keywords": "マルウェア検知,セキュリティ,CDNS,対応,手順",
+    "service_check": "1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```",
+    "recovery_procedure": "1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査",
+    "full_content": "# DNSマルウェア検知対応手順\n\n## 概要\nマルウェア検知が発生した場合の対応手順です。\n\n## 対象システム\nCDNS\n\n## 確認手順\n1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```\n\n## 復旧手順\n1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20056,
+    "title": "アプリエラー率上昇対応手順",
+    "category": "アプリケーション",
+    "system_type": "APP",
+    "keywords": "エラー率上昇,アプリケーション,APP,対応,手順",
+    "service_check": "1. サービス状態確認\n   ```\n   systemctl status [service]\n   curl -v http://localhost:[port]/health\n   ```\n\n2. ログ確認\n   ```\n   journalctl -u [service] -n 100\n   tail -f /var/log/[service]/error.log\n   ```",
+    "recovery_procedure": "1. サービス再起動\n   ```\n   systemctl restart [service]\n   ```\n\n2. 依存サービス確認\n   - DB接続確認\n   - キャッシュ接続確認",
+    "full_content": "# アプリエラー率上昇対応手順\n\n## 概要\nエラー率上昇が発生した場合の対応手順です。\n\n## 対象システム\nAPP\n\n## 確認手順\n1. サービス状態確認\n   ```\n   systemctl status [service]\n   curl -v http://localhost:[port]/health\n   ```\n\n2. ログ確認\n   ```\n   journalctl -u [service] -n 100\n   tail -f /var/log/[service]/error.log\n   ```\n\n## 復旧手順\n1. サービス再起動\n   ```\n   systemctl restart [service]\n   ```\n\n2. 依存サービス確認\n   - DB接続確認\n   - キャッシュ接続確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20057,
+    "title": "監視遅延検知対応手順",
+    "category": "監視アラーム",
+    "system_type": "PHOENIX",
+    "keywords": "遅延検知,監視アラーム,PHOENIX,対応,手順",
+    "service_check": "1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡",
+    "full_content": "# 監視遅延検知対応手順\n\n## 概要\n遅延検知が発生した場合の対応手順です。\n\n## 対象システム\nPHOENIX\n\n## 確認手順\n1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```\n\n## 復旧手順\n1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20058,
+    "title": "LB権限エラー対応手順",
+    "category": "セキュリティ",
+    "system_type": "LB-CORE",
+    "keywords": "権限エラー,セキュリティ,LB-CORE,対応,手順",
+    "service_check": "1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```",
+    "recovery_procedure": "1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査",
+    "full_content": "# LB権限エラー対応手順\n\n## 概要\n権限エラーが発生した場合の対応手順です。\n\n## 対象システム\nLB-CORE\n\n## 確認手順\n1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```\n\n## 復旧手順\n1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20059,
+    "title": "LBSSL異常対応手順",
+    "category": "セキュリティ",
+    "system_type": "LB-CORE",
+    "keywords": "SSL異常,セキュリティ,LB-CORE,対応,手順",
+    "service_check": "1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```",
+    "recovery_procedure": "1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査",
+    "full_content": "# LBSSL異常対応手順\n\n## 概要\nSSL異常が発生した場合の対応手順です。\n\n## 対象システム\nLB-CORE\n\n## 確認手順\n1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```\n\n## 復旧手順\n1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20060,
+    "title": "GATEWAY監視接続断対応手順",
+    "category": "監視アラーム",
+    "system_type": "GATEWAY",
+    "keywords": "接続断,監視アラーム,GATEWAY,対応,手順",
+    "service_check": "1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡",
+    "full_content": "# GATEWAY監視接続断対応手順\n\n## 概要\n接続断が発生した場合の対応手順です。\n\n## 対象システム\nGATEWAY\n\n## 確認手順\n1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```\n\n## 復旧手順\n1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20061,
+    "title": "ストレージディスク障害対応手順",
+    "category": "ストレージ",
+    "system_type": "SRV",
+    "keywords": "ディスク障害,ストレージ,SRV,対応,手順",
+    "service_check": "1. ストレージ状態確認\n   ```\n   lsblk\n   df -h\n   cat /proc/mdstat\n   ```\n\n2. I/O確認\n   ```\n   iostat -x 1 5\n   iotop\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - マウント再実行\n   - ストレージサービス再起動\n\n2. ハードウェア対応\n   - ディスク交換の検討\n   - RAID再構築",
+    "full_content": "# ストレージディスク障害対応手順\n\n## 概要\nディスク障害が発生した場合の対応手順です。\n\n## 対象システム\nSRV\n\n## 確認手順\n1. ストレージ状態確認\n   ```\n   lsblk\n   df -h\n   cat /proc/mdstat\n   ```\n\n2. I/O確認\n   ```\n   iostat -x 1 5\n   iotop\n   ```\n\n## 復旧手順\n1. 一時対応\n   - マウント再実行\n   - ストレージサービス再起動\n\n2. ハードウェア対応\n   - ディスク交換の検討\n   - RAID再構築\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20062,
+    "title": "NW帯域超過対応手順",
+    "category": "ネットワーク",
+    "system_type": "NW",
+    "keywords": "帯域超過,ネットワーク,NW,対応,手順",
+    "service_check": "1. インターフェース確認\n   ```\n   ip link show\n   ip addr show\n   ip route show\n   ```\n\n2. 接続確認\n   ```\n   ping [対向機器IP]\n   traceroute [対向機器IP]\n   ```",
+    "recovery_procedure": "1. 物理確認\n   - ケーブル接続確認\n   - 対向機器の状態確認\n\n2. 論理確認\n   - インターフェース再起動\n   - ルーティング設定確認",
+    "full_content": "# NW帯域超過対応手順\n\n## 概要\n帯域超過が発生した場合の対応手順です。\n\n## 対象システム\nNW\n\n## 確認手順\n1. インターフェース確認\n   ```\n   ip link show\n   ip addr show\n   ip route show\n   ```\n\n2. 接続確認\n   ```\n   ping [対向機器IP]\n   traceroute [対向機器IP]\n   ```\n\n## 復旧手順\n1. 物理確認\n   - ケーブル接続確認\n   - 対向機器の状態確認\n\n2. 論理確認\n   - インターフェース再起動\n   - ルーティング設定確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20063,
+    "title": "DB接続エラー対応手順",
+    "category": "データベース",
+    "system_type": "DB",
+    "keywords": "接続エラー,データベース,DB,対応,手順",
+    "service_check": "1. DB状態確認\n   ```sql\n   SELECT * FROM pg_stat_activity;\n   SHOW PROCESSLIST;\n   ```\n\n2. ログ確認\n   ```\n   tail -100 /var/log/postgresql/postgresql.log\n   tail -100 /var/log/mysql/error.log\n   ```",
+    "recovery_procedure": "1. 接続リセット\n   - 長時間クエリの終了\n   - コネクションプールリセット\n\n2. 性能改善\n   - スロークエリの特定と最適化\n   - インデックス追加の検討",
+    "full_content": "# DB接続エラー対応手順\n\n## 概要\n接続エラーが発生した場合の対応手順です。\n\n## 対象システム\nDB\n\n## 確認手順\n1. DB状態確認\n   ```sql\n   SELECT * FROM pg_stat_activity;\n   SHOW PROCESSLIST;\n   ```\n\n2. ログ確認\n   ```\n   tail -100 /var/log/postgresql/postgresql.log\n   tail -100 /var/log/mysql/error.log\n   ```\n\n## 復旧手順\n1. 接続リセット\n   - 長時間クエリの終了\n   - コネクションプールリセット\n\n2. 性能改善\n   - スロークエリの特定と最適化\n   - インデックス追加の検討\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20064,
+    "title": "プローブサービス監視対応手順",
+    "category": "監視プローブ",
+    "system_type": "GATEWAY",
+    "keywords": "サービス監視,監視プローブ,GATEWAY,対応,手順",
+    "service_check": "1. プローブ状態確認\n   ```\n   /opt/monitoring/bin/probe-status.sh\n   ps aux | grep probe\n   ```\n\n2. ログ確認\n   ```\n   tail -f /var/log/probe/probe.log\n   ```",
+    "recovery_procedure": "1. プローブ再起動\n   ```\n   /opt/monitoring/bin/restart-probe.sh\n   ```\n\n2. 設定確認\n   - /etc/probe/config.yml の確認",
+    "full_content": "# プローブサービス監視対応手順\n\n## 概要\nサービス監視が発生した場合の対応手順です。\n\n## 対象システム\nGATEWAY\n\n## 確認手順\n1. プローブ状態確認\n   ```\n   /opt/monitoring/bin/probe-status.sh\n   ps aux | grep probe\n   ```\n\n2. ログ確認\n   ```\n   tail -f /var/log/probe/probe.log\n   ```\n\n## 復旧手順\n1. プローブ再起動\n   ```\n   /opt/monitoring/bin/restart-probe.sh\n   ```\n\n2. 設定確認\n   - /etc/probe/config.yml の確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20065,
+    "title": "GATEWAY監視同期エラー対応手順",
+    "category": "監視アラーム",
+    "system_type": "GATEWAY",
+    "keywords": "同期エラー,監視アラーム,GATEWAY,対応,手順",
+    "service_check": "1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡",
+    "full_content": "# GATEWAY監視同期エラー対応手順\n\n## 概要\n同期エラーが発生した場合の対応手順です。\n\n## 対象システム\nGATEWAY\n\n## 確認手順\n1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```\n\n## 復旧手順\n1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20066,
+    "title": "LBマルウェア検知対応手順",
+    "category": "セキュリティ",
+    "system_type": "LB-CORE",
+    "keywords": "マルウェア検知,セキュリティ,LB-CORE,対応,手順",
+    "service_check": "1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```",
+    "recovery_procedure": "1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査",
+    "full_content": "# LBマルウェア検知対応手順\n\n## 概要\nマルウェア検知が発生した場合の対応手順です。\n\n## 対象システム\nLB-CORE\n\n## 確認手順\n1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```\n\n## 復旧手順\n1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20067,
+    "title": "アプリワーカー異常対応手順",
+    "category": "アプリケーション",
+    "system_type": "APP",
+    "keywords": "ワーカー異常,アプリケーション,APP,対応,手順",
+    "service_check": "1. サービス状態確認\n   ```\n   systemctl status [service]\n   curl -v http://localhost:[port]/health\n   ```\n\n2. ログ確認\n   ```\n   journalctl -u [service] -n 100\n   tail -f /var/log/[service]/error.log\n   ```",
+    "recovery_procedure": "1. サービス再起動\n   ```\n   systemctl restart [service]\n   ```\n\n2. 依存サービス確認\n   - DB接続確認\n   - キャッシュ接続確認",
+    "full_content": "# アプリワーカー異常対応手順\n\n## 概要\nワーカー異常が発生した場合の対応手順です。\n\n## 対象システム\nAPP\n\n## 確認手順\n1. サービス状態確認\n   ```\n   systemctl status [service]\n   curl -v http://localhost:[port]/health\n   ```\n\n2. ログ確認\n   ```\n   journalctl -u [service] -n 100\n   tail -f /var/log/[service]/error.log\n   ```\n\n## 復旧手順\n1. サービス再起動\n   ```\n   systemctl restart [service]\n   ```\n\n2. 依存サービス確認\n   - DB接続確認\n   - キャッシュ接続確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20068,
+    "title": "DNSポートスキャン対応手順",
+    "category": "セキュリティ",
+    "system_type": "CDNS",
+    "keywords": "ポートスキャン,セキュリティ,CDNS,対応,手順",
+    "service_check": "1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```",
+    "recovery_procedure": "1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査",
+    "full_content": "# DNSポートスキャン対応手順\n\n## 概要\nポートスキャンが発生した場合の対応手順です。\n\n## 対象システム\nCDNS\n\n## 確認手順\n1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```\n\n## 復旧手順\n1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20069,
+    "title": "ストレージI/Oエラー対応手順",
+    "category": "ストレージ",
+    "system_type": "SRV",
+    "keywords": "I/Oエラー,ストレージ,SRV,対応,手順",
+    "service_check": "1. ストレージ状態確認\n   ```\n   lsblk\n   df -h\n   cat /proc/mdstat\n   ```\n\n2. I/O確認\n   ```\n   iostat -x 1 5\n   iotop\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - マウント再実行\n   - ストレージサービス再起動\n\n2. ハードウェア対応\n   - ディスク交換の検討\n   - RAID再構築",
+    "full_content": "# ストレージI/Oエラー対応手順\n\n## 概要\nI/Oエラーが発生した場合の対応手順です。\n\n## 対象システム\nSRV\n\n## 確認手順\n1. ストレージ状態確認\n   ```\n   lsblk\n   df -h\n   cat /proc/mdstat\n   ```\n\n2. I/O確認\n   ```\n   iostat -x 1 5\n   iotop\n   ```\n\n## 復旧手順\n1. 一時対応\n   - マウント再実行\n   - ストレージサービス再起動\n\n2. ハードウェア対応\n   - ディスク交換の検討\n   - RAID再構築\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20070,
+    "title": "GATEWAY監視閾値超過対応手順",
+    "category": "監視アラーム",
+    "system_type": "GATEWAY",
+    "keywords": "閾値超過,監視アラーム,GATEWAY,対応,手順",
+    "service_check": "1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡",
+    "full_content": "# GATEWAY監視閾値超過対応手順\n\n## 概要\n閾値超過が発生した場合の対応手順です。\n\n## 対象システム\nGATEWAY\n\n## 確認手順\n1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```\n\n## 復旧手順\n1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20071,
+    "title": "NWOSPF異常対応手順",
+    "category": "ネットワーク",
+    "system_type": "NW",
+    "keywords": "OSPF異常,ネットワーク,NW,対応,手順",
+    "service_check": "1. インターフェース確認\n   ```\n   ip link show\n   ip addr show\n   ip route show\n   ```\n\n2. 接続確認\n   ```\n   ping [対向機器IP]\n   traceroute [対向機器IP]\n   ```",
+    "recovery_procedure": "1. 物理確認\n   - ケーブル接続確認\n   - 対向機器の状態確認\n\n2. 論理確認\n   - インターフェース再起動\n   - ルーティング設定確認",
+    "full_content": "# NWOSPF異常対応手順\n\n## 概要\nOSPF異常が発生した場合の対応手順です。\n\n## 対象システム\nNW\n\n## 確認手順\n1. インターフェース確認\n   ```\n   ip link show\n   ip addr show\n   ip route show\n   ```\n\n2. 接続確認\n   ```\n   ping [対向機器IP]\n   traceroute [対向機器IP]\n   ```\n\n## 復旧手順\n1. 物理確認\n   - ケーブル接続確認\n   - 対向機器の状態確認\n\n2. 論理確認\n   - インターフェース再起動\n   - ルーティング設定確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20072,
+    "title": "監視データ欠損対応手順",
+    "category": "監視アラーム",
+    "system_type": "PHOENIX",
+    "keywords": "データ欠損,監視アラーム,PHOENIX,対応,手順",
+    "service_check": "1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡",
+    "full_content": "# 監視データ欠損対応手順\n\n## 概要\nデータ欠損が発生した場合の対応手順です。\n\n## 対象システム\nPHOENIX\n\n## 確認手順\n1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```\n\n## 復旧手順\n1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20073,
+    "title": "NWOSPF異常対応手順",
+    "category": "ネットワーク",
+    "system_type": "NW",
+    "keywords": "OSPF異常,ネットワーク,NW,対応,手順",
+    "service_check": "1. インターフェース確認\n   ```\n   ip link show\n   ip addr show\n   ip route show\n   ```\n\n2. 接続確認\n   ```\n   ping [対向機器IP]\n   traceroute [対向機器IP]\n   ```",
+    "recovery_procedure": "1. 物理確認\n   - ケーブル接続確認\n   - 対向機器の状態確認\n\n2. 論理確認\n   - インターフェース再起動\n   - ルーティング設定確認",
+    "full_content": "# NWOSPF異常対応手順\n\n## 概要\nOSPF異常が発生した場合の対応手順です。\n\n## 対象システム\nNW\n\n## 確認手順\n1. インターフェース確認\n   ```\n   ip link show\n   ip addr show\n   ip route show\n   ```\n\n2. 接続確認\n   ```\n   ping [対向機器IP]\n   traceroute [対向機器IP]\n   ```\n\n## 復旧手順\n1. 物理確認\n   - ケーブル接続確認\n   - 対向機器の状態確認\n\n2. 論理確認\n   - インターフェース再起動\n   - ルーティング設定確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20074,
+    "title": "監視応答異常対応手順",
+    "category": "監視アラーム",
+    "system_type": "PHOENIX",
+    "keywords": "応答異常,監視アラーム,PHOENIX,対応,手順",
+    "service_check": "1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```",
+    "recovery_procedure": "1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡",
+    "full_content": "# 監視応答異常対応手順\n\n## 概要\n応答異常が発生した場合の対応手順です。\n\n## 対象システム\nPHOENIX\n\n## 確認手順\n1. アラーム詳細確認\n   - 対象システム・ホスト情報を確認\n   - 発生時刻とcount値を確認\n\n2. 状態確認コマンド\n   ```\n   systemctl status monitoring-agent\n   tail -100 /var/log/monitoring/agent.log\n   ```\n\n## 復旧手順\n1. 一時対応\n   - 監視エージェント再起動: systemctl restart monitoring-agent\n   \n2. エスカレーション\n   - 継続する場合は監視チームへ連絡\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20075,
+    "title": "プローブログ監視対応手順",
+    "category": "監視プローブ",
+    "system_type": "GATEWAY",
+    "keywords": "ログ監視,監視プローブ,GATEWAY,対応,手順",
+    "service_check": "1. プローブ状態確認\n   ```\n   /opt/monitoring/bin/probe-status.sh\n   ps aux | grep probe\n   ```\n\n2. ログ確認\n   ```\n   tail -f /var/log/probe/probe.log\n   ```",
+    "recovery_procedure": "1. プローブ再起動\n   ```\n   /opt/monitoring/bin/restart-probe.sh\n   ```\n\n2. 設定確認\n   - /etc/probe/config.yml の確認",
+    "full_content": "# プローブログ監視対応手順\n\n## 概要\nログ監視が発生した場合の対応手順です。\n\n## 対象システム\nGATEWAY\n\n## 確認手順\n1. プローブ状態確認\n   ```\n   /opt/monitoring/bin/probe-status.sh\n   ps aux | grep probe\n   ```\n\n2. ログ確認\n   ```\n   tail -f /var/log/probe/probe.log\n   ```\n\n## 復旧手順\n1. プローブ再起動\n   ```\n   /opt/monitoring/bin/restart-probe.sh\n   ```\n\n2. 設定確認\n   - /etc/probe/config.yml の確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20076,
+    "title": "DB接続エラー対応手順",
+    "category": "データベース",
+    "system_type": "DB",
+    "keywords": "接続エラー,データベース,DB,対応,手順",
+    "service_check": "1. DB状態確認\n   ```sql\n   SELECT * FROM pg_stat_activity;\n   SHOW PROCESSLIST;\n   ```\n\n2. ログ確認\n   ```\n   tail -100 /var/log/postgresql/postgresql.log\n   tail -100 /var/log/mysql/error.log\n   ```",
+    "recovery_procedure": "1. 接続リセット\n   - 長時間クエリの終了\n   - コネクションプールリセット\n\n2. 性能改善\n   - スロークエリの特定と最適化\n   - インデックス追加の検討",
+    "full_content": "# DB接続エラー対応手順\n\n## 概要\n接続エラーが発生した場合の対応手順です。\n\n## 対象システム\nDB\n\n## 確認手順\n1. DB状態確認\n   ```sql\n   SELECT * FROM pg_stat_activity;\n   SHOW PROCESSLIST;\n   ```\n\n2. ログ確認\n   ```\n   tail -100 /var/log/postgresql/postgresql.log\n   tail -100 /var/log/mysql/error.log\n   ```\n\n## 復旧手順\n1. 接続リセット\n   - 長時間クエリの終了\n   - コネクションプールリセット\n\n2. 性能改善\n   - スロークエリの特定と最適化\n   - インデックス追加の検討\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20077,
+    "title": "DNSファイアウォール対応手順",
+    "category": "セキュリティ",
+    "system_type": "CDNS",
+    "keywords": "ファイアウォール,セキュリティ,CDNS,対応,手順",
+    "service_check": "1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```",
+    "recovery_procedure": "1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査",
+    "full_content": "# DNSファイアウォール対応手順\n\n## 概要\nファイアウォールが発生した場合の対応手順です。\n\n## 対象システム\nCDNS\n\n## 確認手順\n1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```\n\n## 復旧手順\n1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20078,
+    "title": "DNSDoS攻撃検知対応手順",
+    "category": "セキュリティ",
+    "system_type": "CDNS",
+    "keywords": "DoS攻撃検知,セキュリティ,CDNS,対応,手順",
+    "service_check": "1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```",
+    "recovery_procedure": "1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査",
+    "full_content": "# DNSDoS攻撃検知対応手順\n\n## 概要\nDoS攻撃検知が発生した場合の対応手順です。\n\n## 対象システム\nCDNS\n\n## 確認手順\n1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```\n\n## 復旧手順\n1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20079,
+    "title": "LBSSL異常対応手順",
+    "category": "セキュリティ",
+    "system_type": "LB-CORE",
+    "keywords": "SSL異常,セキュリティ,LB-CORE,対応,手順",
+    "service_check": "1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```",
+    "recovery_procedure": "1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査",
+    "full_content": "# LBSSL異常対応手順\n\n## 概要\nSSL異常が発生した場合の対応手順です。\n\n## 対象システム\nLB-CORE\n\n## 確認手順\n1. セキュリティログ確認\n   ```\n   tail -100 /var/log/secure\n   grep -i attack /var/log/messages\n   ```\n\n2. 接続状況確認\n   ```\n   netstat -an | grep ESTABLISHED\n   ss -tuln\n   ```\n\n## 復旧手順\n1. 即時対応\n   - 該当IPのブロック検討\n   - セキュリティチームへ連絡\n\n2. エスカレーション\n   - インシデントチケット起票\n   - 影響範囲の調査\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  },
+  {
+    "manual_id": 20080,
+    "title": "NWVLAN異常対応手順",
+    "category": "ネットワーク",
+    "system_type": "NW",
+    "keywords": "VLAN異常,ネットワーク,NW,対応,手順",
+    "service_check": "1. インターフェース確認\n   ```\n   ip link show\n   ip addr show\n   ip route show\n   ```\n\n2. 接続確認\n   ```\n   ping [対向機器IP]\n   traceroute [対向機器IP]\n   ```",
+    "recovery_procedure": "1. 物理確認\n   - ケーブル接続確認\n   - 対向機器の状態確認\n\n2. 論理確認\n   - インターフェース再起動\n   - ルーティング設定確認",
+    "full_content": "# NWVLAN異常対応手順\n\n## 概要\nVLAN異常が発生した場合の対応手順です。\n\n## 対象システム\nNW\n\n## 確認手順\n1. インターフェース確認\n   ```\n   ip link show\n   ip addr show\n   ip route show\n   ```\n\n2. 接続確認\n   ```\n   ping [対向機器IP]\n   traceroute [対向機器IP]\n   ```\n\n## 復旧手順\n1. 物理確認\n   - ケーブル接続確認\n   - 対向機器の状態確認\n\n2. 論理確認\n   - インターフェース再起動\n   - ルーティング設定確認\n\n## エスカレーション\n- 継続する場合は担当チームへ連絡してください\n- インシデントチケットを起票してください"
+  }
+]
