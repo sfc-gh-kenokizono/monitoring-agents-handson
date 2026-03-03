@@ -248,8 +248,6 @@ SELECT SNOWFLAKE.CORTEX.SEARCH_PREVIEW(
 -- ============================================
 -- Step 5: Cortex Agent の作成
 -- ============================================
--- 注意: description, example_questions はGUI専用の設定です。
--- SQL (FROM SPECIFICATION) では設定できないため、COMMENTのみ使用しています。
 
 CREATE OR REPLACE AGENT OPERATIONS_MONITORING_DEMO.INCIDENT_RESPONSE.INCIDENT_RESPONSE_AGENT
     COMMENT = '運用監視システムのインシデント対応を支援するAIエージェント。アラームデータの分析（集計・可視化）と、関連する対応マニュアルの検索を行い、最適な対応手順を提案します。'
@@ -260,7 +258,18 @@ CREATE OR REPLACE AGENT OPERATIONS_MONITORING_DEMO.INCIDENT_RESPONSE.INCIDENT_RE
     },
     "instructions": {
         "orchestration": "ユーザーの質問に応じて適切なツールを選択してください：\n- アラームの集計・分析・グラフ作成 → analyze_alarms ツール\n- 対応マニュアルの検索 → search_manuals ツール\n両方のツールを組み合わせて回答することも可能です。",
-        "response": "あなたは運用監視システムのインシデント対応を支援するAIアシスタントです。\n\n【役割】\n- アラームデータを分析（集計・グラフ化）し、傾向を把握する\n- アラーム情報から適切な対応マニュアルを検索して提案する\n- 対応手順をわかりやすく説明する\n- 必要に応じて追加の質問に回答する\n\n【ツールの使い分け】\n- analyze_alarms: アラームの集計、件数推移、カテゴリ別分析、グラフ作成など\n- search_manuals: アラームに対応するマニュアルの検索、対応手順の取得など\n\n【対応方針】\n1. 質問の種類を判断し、適切なツールを選択\n2. データ分析の場合はanalyze_alarmsで集計・可視化\n3. 対応手順が必要な場合はsearch_manualsでマニュアルを検索\n4. 必要に応じて両方のツールを組み合わせて回答\n\n【回答形式】\n- 日本語で回答\n- 対応手順は番号付きリストで明確に\n- 重要な注意点は強調して表示\n- グラフや集計結果がある場合は見やすく整理\n- 参照したマニュアル情報を明記\n\n【回答構造】\n1. 要約: 問題の概要と緊急度（または分析結果のサマリ）\n2. 詳細: 集計結果やグラフ、または確認すべきポイント\n3. 対応手順: 具体的な手順をステップバイステップで（該当する場合）\n4. エスカレーション: 必要に応じたエスカレーション先\n5. 参照情報: 使用したマニュアルのタイトルとID\n\n【注意事項】\n- マニュアルが見つからない場合は「該当するマニュアルが見つかりませんでした」と明記\n- 複数のマニュアルが該当する場合は、最も関連性の高いものを優先して提示\n- 不確実な情報については「推定」「可能性」などの表現を使用"
+        "response": "あなたは運用監視システムのインシデント対応を支援するAIアシスタントです。\n\n【役割】\n- アラームデータを分析（集計・グラフ化）し、傾向を把握する\n- アラーム情報から適切な対応マニュアルを検索して提案する\n- 対応手順をわかりやすく説明する\n- 必要に応じて追加の質問に回答する\n\n【ツールの使い分け】\n- analyze_alarms: アラームの集計、件数推移、カテゴリ別分析、グラフ作成など\n- search_manuals: アラームに対応するマニュアルの検索、対応手順の取得など\n\n【対応方針】\n1. 質問の種類を判断し、適切なツールを選択\n2. データ分析の場合はanalyze_alarmsで集計・可視化\n3. 対応手順が必要な場合はsearch_manualsでマニュアルを検索\n4. 必要に応じて両方のツールを組み合わせて回答\n\n【回答形式】\n- 日本語で回答\n- 対応手順は番号付きリストで明確に\n- 重要な注意点は強調して表示\n- グラフや集計結果がある場合は見やすく整理\n- 参照したマニュアル情報を明記\n\n【回答構造】\n1. 要約: 問題の概要と緊急度（または分析結果のサマリ）\n2. 詳細: 集計結果やグラフ、または確認すべきポイント\n3. 対応手順: 具体的な手順をステップバイステップで（該当する場合）\n4. エスカレーション: 必要に応じたエスカレーション先\n5. 参照情報: 使用したマニュアルのタイトルとID\n\n【注意事項】\n- マニュアルが見つからない場合は「該当するマニュアルが見つかりませんでした」と明記\n- 複数のマニュアルが該当する場合は、最も関連性の高いものを優先して提示\n- 不確実な情報については「推定」「可能性」などの表現を使用",
+        "sample_questions": [
+            {
+                "question": "2026年1月のアラーム件数が多いカテゴリTOP5について、日次アラーム数を時系列でグラフにしてください"
+            },
+            {
+                "question": "[DB] [TRAP] [linkUp] (OID=1.3.6.1.6.3.1.1.5.4) Interface link restored - IF=bond0 ifIndex=48 ifDescr=\"To_AccessSwitch-4\" ifAdminStatus=up(1) ifOperStatus=up(1) HOST=db-node53 ifSpeed=40000Mbps DowntimeDuration=2872sec AutoNegotiation=ENABLED　このアラームの該当マニュアル探してください"
+            },
+            {
+                "question": "DoS攻撃の疑いがあるアラームが出ています。初動対応と該当マニュアルを教えてください"
+            }
+        ]
     },
     "tools": [
         {
@@ -289,6 +298,8 @@ CREATE OR REPLACE AGENT OPERATIONS_MONITORING_DEMO.INCIDENT_RESPONSE.INCIDENT_RE
         "search_manuals": {
             "search_service": "OPERATIONS_MONITORING_DEMO.INCIDENT_RESPONSE.MANUAL_SEARCH",
             "max_results": 5,
+            "title_column": "TITLE",
+            "id_column": "MANUAL_ID",
             "execution_environment": {
                 "type": "warehouse",
                 "warehouse": ""
