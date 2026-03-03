@@ -248,17 +248,13 @@ SELECT SNOWFLAKE.CORTEX.SEARCH_PREVIEW(
 -- ============================================
 -- Step 5: Cortex Agent の作成
 -- ============================================
+-- 注意: description, example_questions はGUI専用の設定です。
+-- SQL (FROM SPECIFICATION) では設定できないため、COMMENTのみ使用しています。
 
 CREATE OR REPLACE AGENT OPERATIONS_MONITORING_DEMO.INCIDENT_RESPONSE.INCIDENT_RESPONSE_AGENT
-    COMMENT = '運用監視システムのインシデント対応を支援するAIエージェント'
+    COMMENT = '運用監視システムのインシデント対応を支援するAIエージェント。アラームデータの分析（集計・可視化）と、関連する対応マニュアルの検索を行い、最適な対応手順を提案します。'
     FROM SPECIFICATION $$
 {
-    "description": "運用監視システムのインシデント対応を支援するAIエージェントです。アラームデータの分析（集計・可視化）と、関連する対応マニュアルの検索を行い、最適な対応手順を提案します。ユーザーは日本語でアラーム分析や対応方法について問い合わせます。",
-    "example_questions": [
-        "2026年1月のアラーム件数が多いカテゴリTOP5について、日次アラーム数を時系列でグラフにしてください",
-        "[DB] [TRAP] [linkUp] (OID=1.3.6.1.6.3.1.1.5.4) Interface link restored - IF=bond0 ifIndex=48 ifDescr=\"To_AccessSwitch-4\" ifAdminStatus=up(1) ifOperStatus=up(1) HOST=db-node53 ifSpeed=40000Mbps DowntimeDuration=2872sec AutoNegotiation=ENABLED　このアラームの該当マニュアル探してください",
-        "DoS攻撃の疑いがあるアラームが出ています。初動対応と該当マニュアルを教えてください"
-    ],
     "models": {
         "orchestration": "claude-sonnet-4-5"
     },
@@ -284,13 +280,19 @@ CREATE OR REPLACE AGENT OPERATIONS_MONITORING_DEMO.INCIDENT_RESPONSE.INCIDENT_RE
     ],
     "tool_resources": {
         "analyze_alarms": {
-            "semantic_view": "OPERATIONS_MONITORING_DEMO.INCIDENT_RESPONSE.ALARMS_SV"
+            "semantic_view": "OPERATIONS_MONITORING_DEMO.INCIDENT_RESPONSE.ALARMS_SV",
+            "execution_environment": {
+                "type": "warehouse",
+                "warehouse": ""
+            }
         },
         "search_manuals": {
             "search_service": "OPERATIONS_MONITORING_DEMO.INCIDENT_RESPONSE.MANUAL_SEARCH",
-            "id_column": "MANUAL_ID",
-            "title_column": "TITLE",
-            "max_results": 5
+            "max_results": 5,
+            "execution_environment": {
+                "type": "warehouse",
+                "warehouse": ""
+            }
         }
     }
 }
