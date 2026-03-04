@@ -251,6 +251,7 @@ SELECT SNOWFLAKE.CORTEX.SEARCH_PREVIEW(
 
 CREATE OR REPLACE AGENT OPERATIONS_MONITORING_DEMO.INCIDENT_RESPONSE.INCIDENT_RESPONSE_AGENT
     COMMENT = '運用監視システムのインシデント対応を支援するAIエージェント。アラームデータの分析（集計・可視化）と、関連する対応マニュアルの検索を行い、最適な対応手順を提案します。'
+    PROFILE = '{"display_name": "INCIDENT_RESPONSE_AGENT"}'
     FROM SPECIFICATION $$
 {
     "models": {
